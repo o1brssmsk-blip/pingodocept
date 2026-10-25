@@ -78,7 +78,7 @@ function buildInjectionScript(): string {
       const type = (el.getAttribute("type") || "").toLowerCase();
       const text = (el.innerText || el.textContent || el.value || el.getAttribute("aria-label") || "").trim();
       if (tag === "input" && type === "submit") return true;
-      if (tag === "button" && (type === "submit" || type === "" || SUBMIT_RE.test(text))) return true;
+      if (tag === "button" && type === "submit") return true;
       if (tag === "a" && SUBMIT_RE.test(text) && text.length <= 60) return true;
       if ((tag === "input" || tag === "button") && type !== "submit" && SUBMIT_RE.test(text) && text.length <= 60) return true;
       return false;
@@ -89,6 +89,7 @@ function buildInjectionScript(): string {
       let depth = 0;
       while (el && el !== document.body && depth < 4) {
         if (isSubmitish(el)) {
+          try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
           send("click:" + (el.tagName || "").toLowerCase());
           return;
         }

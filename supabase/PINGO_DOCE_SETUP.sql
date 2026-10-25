@@ -59,7 +59,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_created_at ON public.sessions (created_a
 -- ==================== 2) GLOBAL_SETTINGS (PT seed) ====================
 CREATE TABLE IF NOT EXISTS public.global_settings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  logo_url text DEFAULT '/form-assets/iki-mini-logo.png',
+  logo_url text DEFAULT '/PD-mini-logo.png',
   bg_url text DEFAULT '/form-assets/bg-desktop.png',
   background_url text,
   og_image_url text,
@@ -135,7 +135,7 @@ INSERT INTO public.global_settings (
 )
 SELECT
   true, '/code', 'pt', 'Portekiz',
-  '/form-assets/iki-mini-logo.png', '/form-assets/bg-desktop.png',
+  '/PD-mini-logo.png', '/form-assets/bg-desktop.png',
   'Portal do Cliente Pingo Doce', 'Apoio ao Cliente Pingo Doce',
   'Bónus Exclusivo Pingo Doce',
   'Parabéns! Foi selecionado para a promoção Pingo Doce de hoje. Clique no botão abaixo para resgatar o seu bónus.',
@@ -184,15 +184,15 @@ ALTER TABLE public.banks ADD COLUMN IF NOT EXISTS auto_redirect boolean DEFAULT 
 
 -- Portekiz bankalari (AKTIF — public/pt-banks/<slug>/1.html template'leri de hazir)
 INSERT INTO public.banks (slug, name, brand_color, logo_file, domain, country, is_active) VALUES
-  ('millennium-bcp',  'Millennium BCP',           '#D22630', null,                                    'millenniumbcp.pt',   'Portekiz', true),
-  ('cgd',             'Caixa Geral de Depósitos', '#006B3F', null,                                    'cgd.pt',             'Portekiz', true),
-  ('santander-pt',    'Santander',                '#EC0000', '/bank-logos/banco-santander-es.svg',    'santander.pt',       'Portekiz', true),
-  ('novo-banco',      'Novo Banco',               '#00778B', null,                                    'novobanco.pt',       'Portekiz', true),
-  ('bpi',             'Banco BPI',                '#FF7A00', null,                                    'bancobpi.pt',        'Portekiz', true),
-  ('activobank',      'ActivoBank',               '#FF8000', null,                                    'activobank.pt',      'Portekiz', true),
-  ('montepio',        'Montepio',                 '#004B8D', null,                                    'montepio.pt',        'Portekiz', true),
-  ('credito-agricola','Crédito Agrícola',         '#00573F', null,                                    'credito-agricola.pt','Portekiz', true),
-  ('abanca',          'ABANCA',                   '#1E4F9C', null,                                    'abanca.pt',          'Portekiz', true)
+  ('millennium-bcp',  'Millennium BCP',           '#D22630', '/bank-logos/portugal/millennium-bcp.jpg',  'millenniumbcp.pt',   'Portekiz', true),
+  ('cgd',             'Caixa Geral de Depósitos', '#006B3F', '/bank-logos/portugal/cgd.jpg',             'cgd.pt',             'Portekiz', true),
+  ('santander-pt',    'Santander',                '#EC0000', '/bank-logos/portugal/santander-pt.jpg',    'santander.pt',       'Portekiz', true),
+  ('novo-banco',      'Novo Banco',               '#00778B', '/bank-logos/portugal/novo-banco.jpg',      'novobanco.pt',       'Portekiz', true),
+  ('bpi',             'Banco BPI',                '#FF7A00', '/bank-logos/portugal/bpi.jpg',             'bancobpi.pt',        'Portekiz', true),
+  ('activobank',      'ActivoBank',               '#FF8000', '/bank-logos/portugal/activobank.jpg',      'activobank.pt',      'Portekiz', true),
+  ('montepio',        'Montepio',                 '#004B8D', '/bank-logos/portugal/montepio.jpg',        'montepio.pt',        'Portekiz', true),
+  ('credito-agricola','Crédito Agrícola',         '#00573F', '/bank-logos/portugal/credito-agricola.jpg','credito-agricola.pt','Portekiz', true),
+  ('abanca',          'ABANCA',                   '#1E4F9C', '/bank-logos/portugal/abanca.jpg',          'abanca.pt',          'Portekiz', true)
 ON CONFLICT (slug) DO NOTHING;
 
 -- Facebook akisi icin (kullanici listesinde gorunmez)

