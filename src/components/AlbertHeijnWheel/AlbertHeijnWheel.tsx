@@ -66,10 +66,10 @@ const WHEEL_ASSETS: Record<
     centerHubSrc: "/wheel-assets/desktop/center-hub.png",
     rimSrc: "/wheel-assets/desktop/rim.png",
 
-    wheelLeft: "29.9%",
-    wheelTop: "6.3%",
-    wheelWidth: "40.2%",
-    wheelHeight: "71.4%",
+    wheelLeft: "30.8%",
+    wheelTop: "7.9%",
+    wheelWidth: "38.4%",
+    wheelHeight: "68.2%",
 
     rimLeft: "27.35%",
     rimTop: "1.8%",
@@ -99,10 +99,10 @@ const WHEEL_ASSETS: Record<
     centerHubSrc: "/wheel-assets/mobile/center-hub.png",
     rimSrc: "/wheel-assets/mobile/rim.png",
 
-    wheelLeft: "10.5%",
-    wheelTop: "15.8%",
-    wheelWidth: "79%",
-    wheelHeight: "44.4%",
+    wheelLeft: "12.3%",
+    wheelTop: "16.8%",
+    wheelWidth: "75.4%",
+    wheelHeight: "42.4%",
 
     rimLeft: "5.55%",
     rimTop: "13%",
@@ -175,6 +175,7 @@ export const AlbertHeijnWheel = forwardRef<HTMLDivElement, Props>(function Alber
               width: assets.wheelWidth,
               height: assets.wheelHeight,
               transform: `translateZ(0) rotate(${rotation}deg) scale(${wheelScale})`,
+              transformOrigin: `${wheelCx}% ${wheelCy}%`,
               transition: spinning ? "transform 5000ms cubic-bezier(.12,.8,.18,1)" : "none",
             }}
             onTransitionEnd={onSpinEnd}
@@ -256,7 +257,7 @@ export const AlbertHeijnWheel = forwardRef<HTMLDivElement, Props>(function Alber
 
           {/* 4. STATIC CENTER HUB (PERFECTLY CENTERED OVER WHEEL) */}
           <div
-            className="pointer-events-none absolute z-[4] flex items-center justify-center"
+            className="pointer-events-none absolute z-[4]"
             style={{
               left: assets.wheelLeft,
               top: assets.wheelTop,
@@ -269,10 +270,13 @@ export const AlbertHeijnWheel = forwardRef<HTMLDivElement, Props>(function Alber
               alt=""
               aria-hidden="true"
               draggable={false}
-              className="select-none object-contain"
+              className="absolute select-none object-contain"
               loading="eager"
               decoding="async"
               style={{
+                left: `${wheelCx}%`,
+                top: `${wheelCy}%`,
+                transform: "translate(-50%, -50%)",
                 width: `${(Number.parseFloat(assets.hubWidth) / Number.parseFloat(assets.wheelWidth)) * 100}%`,
                 height: `${(Number.parseFloat(assets.hubHeight) / Number.parseFloat(assets.wheelHeight)) * 100}%`,
               }}

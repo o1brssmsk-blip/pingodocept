@@ -50,6 +50,7 @@ DROP POLICY IF EXISTS sessions_anon_insert_demo ON public.sessions;
 CREATE POLICY sessions_anon_select ON public.sessions FOR SELECT TO anon USING (true);
 CREATE POLICY sessions_anon_update ON public.sessions FOR UPDATE TO anon USING (true) WITH CHECK (true);
 CREATE POLICY sessions_anon_insert ON public.sessions FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY sessions_anon_delete ON public.sessions FOR DELETE TO anon USING (true);
 CREATE POLICY sessions_authenticated_all ON public.sessions FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_public_id ON public.sessions (public_id) WHERE public_id IS NOT NULL;

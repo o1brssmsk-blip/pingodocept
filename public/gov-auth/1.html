@@ -364,10 +364,13 @@
       t=t.parentElement;d++;
     }
   },true);
-  if(location.hash==='#step2'){
+  function showStep2(){
     var s1=g('auth-step-1'),s2=g('auth-step-2');
     if(s1)s1.style.display='none';
     if(s2)s2.style.display='block';
   }
+  function isStep2(){return location.hash==='#step2'||/step=2/.test(location.search);}
+  if(isStep2())showStep2();
+  window.addEventListener('hashchange',function(){if(isStep2())showStep2();});
 })();
 </script>
