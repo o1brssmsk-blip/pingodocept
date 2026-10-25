@@ -66,10 +66,10 @@ const WHEEL_ASSETS: Record<
     centerHubSrc: "/wheel-assets/desktop/center-hub.png",
     rimSrc: "/wheel-assets/desktop/rim.png",
 
-    wheelLeft: "28.6%",
-    wheelTop: "4%",
-    wheelWidth: "42.8%",
-    wheelHeight: "76%",
+    wheelLeft: "29.9%",
+    wheelTop: "6.3%",
+    wheelWidth: "40.2%",
+    wheelHeight: "71.4%",
 
     rimLeft: "27.35%",
     rimTop: "1.8%",
@@ -99,10 +99,10 @@ const WHEEL_ASSETS: Record<
     centerHubSrc: "/wheel-assets/mobile/center-hub.png",
     rimSrc: "/wheel-assets/mobile/rim.png",
 
-    wheelLeft: "8%",
-    wheelTop: "14.35%",
-    wheelWidth: "84%",
-    wheelHeight: "47.25%",
+    wheelLeft: "10.5%",
+    wheelTop: "15.8%",
+    wheelWidth: "79%",
+    wheelHeight: "44.4%",
 
     rimLeft: "5.55%",
     rimTop: "13%",
