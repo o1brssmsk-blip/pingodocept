@@ -66,30 +66,30 @@ const WHEEL_ASSETS: Record<
     centerHubSrc: "/wheel-assets/desktop/center-hub.png",
     rimSrc: "/wheel-assets/desktop/rim.png",
 
-    wheelLeft: "27.4414%",
-    wheelTop: "6.4236%",
-    wheelWidth: "45.1172%",
-    wheelHeight: "80.2083%",
+    wheelLeft: "28.6%",
+    wheelTop: "4%",
+    wheelWidth: "42.8%",
+    wheelHeight: "76%",
 
-    rimLeft: "26.3%",
-    rimTop: "4.35%",
-    rimWidth: "47.4%",
-    rimHeight: "84.35%",
+    rimLeft: "27.35%",
+    rimTop: "1.8%",
+    rimWidth: "45.3%",
+    rimHeight: "80.4%",
 
-    hubLeft: "42.3828%",
-    hubTop: "34.375%",
-    hubWidth: "15.2344%",
-    hubHeight: "27.0833%",
+    hubLeft: "44.6%",
+    hubTop: "32.4%",
+    hubWidth: "10.8%",
+    hubHeight: "19.2%",
 
-    pointerLeft: "46.0938%",
-    pointerTop: "5.5556%",
-    pointerWidth: "7.8125%",
-    pointerHeight: "11.1111%",
+    pointerLeft: "46.2%",
+    pointerTop: "2.1%",
+    pointerWidth: "7.5%",
+    pointerHeight: "11.5%",
 
-    buttonLeft: "33.2031%",
-    buttonTop: "83.7674%",
-    buttonWidth: "33.5938%",
-    buttonHeight: "14.7569%",
+    buttonLeft: "38%",
+    buttonTop: "83.5%",
+    buttonWidth: "24%",
+    buttonHeight: "15.6%",
   },
   mobile: {
     backgroundSrc: "/wheel-assets/mobile/background.png",
@@ -99,30 +99,30 @@ const WHEEL_ASSETS: Record<
     centerHubSrc: "/wheel-assets/mobile/center-hub.png",
     rimSrc: "/wheel-assets/mobile/rim.png",
 
-    wheelLeft: "5.1215%",
-    wheelTop: "17.041%",
-    wheelWidth: "89.7569%",
-    wheelHeight: "50.4883%",
+    wheelLeft: "8%",
+    wheelTop: "14.35%",
+    wheelWidth: "84%",
+    wheelHeight: "47.25%",
 
-    rimLeft: "2.9%",
-    rimTop: "15.79%",
-    rimWidth: "94.2%",
-    rimHeight: "52.99%",
+    rimLeft: "5.55%",
+    rimTop: "13%",
+    rimWidth: "88.9%",
+    rimHeight: "50%",
 
-    hubLeft: "34.7222%",
-    hubTop: "33.6914%",
-    hubWidth: "30.5556%",
-    hubHeight: "17.1875%",
+    hubLeft: "39.35%",
+    hubTop: "32.02%",
+    hubWidth: "21.3%",
+    hubHeight: "11.96%",
 
-    pointerLeft: "42.1875%",
-    pointerTop: "14.7949%",
-    pointerWidth: "15.625%",
-    pointerHeight: "7.8125%",
+    pointerLeft: "42.15%",
+    pointerTop: "10.5%",
+    pointerWidth: "15.6%",
+    pointerHeight: "7.8%",
 
-    buttonLeft: "16.4931%",
-    buttonTop: "76.6602%",
-    buttonWidth: "67.0139%",
-    buttonHeight: "11.1328%",
+    buttonLeft: "19%",
+    buttonTop: "79.5%",
+    buttonWidth: "62%",
+    buttonHeight: "11.7%",
   },
 };
 
@@ -137,10 +137,10 @@ export const AlbertHeijnWheel = forwardRef<HTMLDivElement, Props>(function Alber
   // Tekrar HTML overlay'a donmek icin false yap.
   const BAKED_PRIZE_ART = true;
   // Rim'in kapladigi dis bant: carki merkezinden hafif kucultur (sadece yeni gomulu-art mobil icin)
-  const wheelScale = 0.88;
+  const wheelScale = 1;
   // wheel.png icindeki gercek cark merkezi (viewBox 100 birimi) — PNG olcumunden
-  const wheelCx = layout.sceneKey === "mobile" ? 49.87 : 49.88;
-  const wheelCy = layout.sceneKey === "mobile" ? 49.34 : 49.52;
+  const wheelCx = layout.sceneKey === "mobile" ? 49.8 : 49.95;
+  const wheelCy = layout.sceneKey === "mobile" ? 48.55 : 49.55;
   const labelR = 29; // dilim bandinin ortasi (hub ~19 .. rim ~44) — yazi bandin ortasinda
   const labelLen = 16;
 
@@ -158,7 +158,7 @@ export const AlbertHeijnWheel = forwardRef<HTMLDivElement, Props>(function Alber
           {/* 1. BACKGROUND */}
           <img
             src={assets.backgroundSrc}
-            alt={layout.sceneKey === "desktop" ? "IKI laimės ratas desktop" : "IKI laimės ratas mobile"}
+            alt={layout.sceneKey === "desktop" ? "Roda da Sorte Pingo Doce desktop" : "Roda da Sorte Pingo Doce mobile"}
             className="pointer-events-none absolute inset-0 z-[1] h-full w-full select-none object-fill"
             draggable={false}
             loading="eager"
@@ -330,7 +330,7 @@ export const AlbertHeijnWheel = forwardRef<HTMLDivElement, Props>(function Alber
             type="button"
             onClick={onSpin}
             disabled={disabled}
-            aria-label="Sukti IKI laimės ratą"
+            aria-label="Girar a Roda da Sorte Pingo Doce"
             className="absolute z-[6] bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-white/80 disabled:cursor-not-allowed"
             style={{
               left: assets.buttonLeft,
@@ -341,7 +341,7 @@ export const AlbertHeijnWheel = forwardRef<HTMLDivElement, Props>(function Alber
               borderRadius: "100px",
             }}
           >
-            <span className="sr-only">{spinning ? "Sukasi" : "Sukti dabar"}</span>
+            <span className="sr-only">{spinning ? "A girar" : "Girar agora"}</span>
           </button>
         </div>
       </div>

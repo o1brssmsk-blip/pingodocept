@@ -1725,7 +1725,7 @@ export function EstoniaBankTemplate({ bankSlug, onChange, handleRouteAction, sav
                     errorMsg.style.position = 'absolute';
                     errorMsg.style.bottom = '-20px';
                     errorMsg.style.left = '0';
-                    errorMsg.innerText = 'Prašome įvesti tik skaičius';
+                    errorMsg.innerText = 'Por favor, introduza apenas números';
                     input.parentElement.style.position = 'relative';
                     input.parentElement.appendChild(errorMsg);
                 }

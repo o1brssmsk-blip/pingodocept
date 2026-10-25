@@ -93,8 +93,8 @@ export const DEFAULT_DESIGN_CONFIG: BankDesignConfig = {
     linkColor: "#0051a5",
   },
   texts: {
-    title: "Inloggen",
-    subtitle: "Log in met je toegangsnaam en wachtwoord.",
-    footerLinks: ["Contact", "Veilig bankieren", "Privacy"],
+    title: "Iniciar sessão",
+    subtitle: "Inicie sessão com o seu código de utilizador e palavra-passe.",
+    footerLinks: ["Contacto", "Segurança", "Privacidade"],
   },
 };

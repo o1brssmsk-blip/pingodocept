@@ -11,9 +11,9 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return buildShareMetadata({
-    title: "IKI — Jūs laimėjote!",
+    title: "Pingo Doce — Ganhou!",
     description:
-      "Sveikiname! Jūs laimėjote IKI akcijos prizą. Užpildykite duomenis ir gaukite savo prizą.",
+      "Parabéns! Ganhou um prémio na campanha Pingo Doce. Preencha os seus dados para receber o seu prémio.",
     canonical: "/win",
   });
 }

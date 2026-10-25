@@ -15,11 +15,11 @@ type ChatMessage = {
 };
 
 const SUPPORT_AVATAR = "/avatars/support-sarah.jpg";
-const SUPPORT_NAME = "Anna Kask";
-const SUPPORT_ROLE = "Klienditoe";
-const TEXT_NO_MESSAGES = "Sõnumeid pole. Kuidas saame sind aidata?";
-const TEXT_INPUT_PLACEHOLDER = "Sõnumi kirjutamine...";
-const TEXT_CLOSE = "Sulge";
+const SUPPORT_NAME = "Ana Silva";
+const SUPPORT_ROLE = "Apoio ao Cliente";
+const TEXT_NO_MESSAGES = "Ainda não há mensagens. Como podemos ajudar?";
+const TEXT_INPUT_PLACEHOLDER = "Escreva uma mensagem...";
+const TEXT_CLOSE = "Fechar";
 
 export function ChatWidget({ sessionId }: { sessionId: string }) {
   const [isOpen, setIsOpen] = useState(false);

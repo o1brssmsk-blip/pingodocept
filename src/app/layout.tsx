@@ -42,7 +42,7 @@ export default function RootLayout({
   const ENABLE_TOAST = false;
 
   return (
-    <html lang="lt">
+    <html lang="pt">
       <head>
         <OgImageTags />
       </head>

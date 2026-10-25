@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return buildShareMetadata({
-    title: "IKI kampanija",
-    description: "IKI kampanija",
+    title: "Campanha Pingo Doce",
+    description: "Campanha Pingo Doce",
     canonical: "/banken2",
   });
 }

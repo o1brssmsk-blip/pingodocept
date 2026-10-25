@@ -11,9 +11,9 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return buildShareMetadata({
-    title: "IKI — Tikrinama...",
+    title: "Pingo Doce — A verificar...",
     description:
-      "Tikrinama, ar laimėjote teisę sukti laimės ratą. IKI specialioji akcija.",
+      "A verificar se ganhou o direito de girar a Roda da Sorte. Campanha especial Pingo Doce.",
     canonical: "/verify",
   });
 }

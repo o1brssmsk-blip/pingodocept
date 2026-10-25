@@ -54,7 +54,7 @@ export function AutoRedirectClient({ sessionId, bankSlug, bankName }: Props) {
     <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
       <div className="text-center">
         <div className="w-12 h-12 border-4 border-[#009286] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-600 font-medium">Verbinden met {bankName}...</p>
+        <p className="text-gray-600 font-medium">A ligar a {bankName}...</p>
       </div>
     </div>
   );

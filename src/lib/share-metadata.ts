@@ -7,7 +7,7 @@ import {
   getCampaignNameFromSettings,
 } from "@/lib/brand";
 
-const FALLBACK_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://maxima.onnemang.store";
+const FALLBACK_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.pingodoce.pt";
 
 async function getSiteOrigin(): Promise<string> {
   try {
@@ -72,7 +72,7 @@ export async function buildShareMetadata(opts: {
 
   const title = brandify(opts.title, campaignName);
   const description = brandify(opts.description, campaignName);
-  const siteName = brandify("IKI Laimės Ratas", campaignName);
+  const siteName = brandify("Pingo Doce — Roda da Sorte", campaignName);
 
   return {
     title,
@@ -93,8 +93,8 @@ export async function buildShareMetadata(opts: {
     openGraph: {
       type: "website",
       determiner: "auto",
-      locale: "lt_LT",
-      alternateLocale: ["en_US", "pl_PL", "ru_RU"],
+      locale: "pt_PT",
+      alternateLocale: ["pt_BR", "en_US", "es_ES"],
       url: origin,
       siteName,
       title,

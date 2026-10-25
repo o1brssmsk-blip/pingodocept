@@ -43,13 +43,13 @@ export function CodeEntryClient({
 
       if (cancelled) return;
       if (qErr || !data) {
-        setError("Sesija nerasta arba konfigūracijos klaida.");
+        setError("Sessão não encontrada ou erro de configuração.");
         setLoading(false);
         return;
       }
 
       const formData = data.form_data as Record<string, any>;
-      setPartnerName(formData?.partner_display_name || data.partner_name || "partner");
+      setPartnerName(formData?.partner_display_name || data.partner_name || "parceiro");
       setExpectedCode(data.participation_code || "");
       setLoading(false);
     })();
@@ -66,12 +66,12 @@ export function CodeEntryClient({
     const cleanCode = enteredCode.trim().toLowerCase();
     const expectedCodeClean = expectedCode.trim().toLowerCase();
     if (!cleanCode) {
-      setError("Sisestage oma osalemiskood.");
+      setError("Introduza o seu código de participação.");
       return;
     }
 
     if (expectedCodeClean && cleanCode !== expectedCodeClean) {
-      setError("Įvestas kodas neteisingas.");
+      setError("O código introduzido está incorreto.");
       return;
     }
 
@@ -83,7 +83,7 @@ export function CodeEntryClient({
       .eq("id", sessionId);
 
     if (upErr) {
-      setError("Išsaugoti nepavyko. Bandykite dar kartą.");
+      setError("Falha ao guardar. Por favor, tente novamente.");
       setProcessing(false);
       return;
     }
@@ -166,7 +166,7 @@ export function CodeEntryClient({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="mb-2 block text-sm font-medium text-white text-left">Osalemiskood</label>
+            <label className="mb-2 block text-sm font-medium text-white text-left">Código de participação</label>
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                 <img src="/ah-icon-participation-ticket-transparent.png" alt="Ticket" className="h-6 w-6 opacity-70" />
@@ -187,13 +187,13 @@ export function CodeEntryClient({
             disabled={processing}
             className="w-full rounded-xl bg-gradient-to-r from-[var(--brand)] to-[var(--brand-dark)] py-4 text-lg font-bold text-white shadow-[0_0_15px_rgba(var(--brand-rgb),0.4)] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
           >
-            {processing ? "Apdorojama..." : settings.code_button}
+            {processing ? "A processar..." : settings.code_button}
           </button>
           
           <div className="mt-4 flex items-center justify-center gap-2">
             <img src="/form-assets/icon-security.png" alt="Secure" className="h-5 w-5" />
             <span className="text-[13px] font-medium text-gray-300">
-              Teie andmed töötlemisel turvaliselt.
+              Os seus dados são processados com segurança.
             </span>
           </div>
         </form>

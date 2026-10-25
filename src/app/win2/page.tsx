@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return buildShareMetadata({
-    title: "IKI — Rezultatas",
-    description: "IKI kampanijos rezultatų puslapis.",
+    title: "Pingo Doce — Resultado",
+    description: "Página de resultados da campanha Pingo Doce.",
     canonical: "/win2",
   });
 }

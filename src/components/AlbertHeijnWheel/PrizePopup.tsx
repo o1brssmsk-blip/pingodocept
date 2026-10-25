@@ -30,11 +30,11 @@ type Props = {
 const POPUP_CONFIG = {
   desktop: {
     src: "/popup-assets/popup-desktop.png",
-    nameBoxClassName: "absolute left-[6.5%] top-[34.5%] flex h-[6.5%] w-[55%] items-center px-[0.5%]",
+    nameBoxClassName: "absolute left-[9.3%] top-[38.9%] flex h-[9.2%] w-[44%] items-center justify-center px-[2%]",
     nameFontSize: (name: string) =>
       name.length >= 18 ? "clamp(0.95rem, 1.5vw, 1.35rem)" : name.length >= 12 ? "clamp(1.15rem, 1.9vw, 1.7rem)" : name.length >= 8 ? "clamp(1.35rem, 2.2vw, 2rem)" : "clamp(1.6rem, 2.7vw, 2.4rem)",
-    amountBoxClassName: "absolute left-[6%] top-[54.3%] flex h-[11.5%] w-[47.3%] items-center justify-center px-[3%]",
-    ctaClassName: "absolute left-[6%] top-[67.2%] h-[11.5%] w-[47.3%] rounded-full",
+    amountBoxClassName: "absolute left-[9.2%] top-[59.2%] flex h-[8.5%] w-[45.8%] items-center justify-center px-[3%]",
+    ctaClassName: "absolute left-[9%] top-[71.5%] h-[12%] w-[46%] rounded-full",
     closeClassName: "absolute right-[5.5%] top-[9%] h-[9%] w-[7.5%] rounded-full",
     amountFontSize: (label: string) =>
       label.length >= 6 ? "clamp(1.8rem, 3.2vw, 2.7rem)" : label.length >= 5 ? "clamp(2.1rem, 3.6vw, 3.1rem)" : "clamp(2.4rem, 4.2vw, 3.5rem)",
@@ -43,11 +43,11 @@ const POPUP_CONFIG = {
   },
   mobile: {
     src: "/popup-assets/popup-mobile.png",
-    nameBoxClassName: "absolute left-[8.5%] top-[35.8%] flex h-[6%] w-[75%] items-center px-[1%]",
+    nameBoxClassName: "absolute left-[13%] top-[26.6%] flex h-[5.5%] w-[75%] items-center justify-center px-[1.5%]",
     nameFontSize: (name: string) =>
       name.length >= 18 ? "clamp(1.05rem, 4.2vw, 1.5rem)" : name.length >= 12 ? "clamp(1.3rem, 5.5vw, 1.9rem)" : name.length >= 8 ? "clamp(1.55rem, 6.5vw, 2.25rem)" : "clamp(1.8rem, 7.5vw, 2.6rem)",
-    amountBoxClassName: "absolute left-[8.3%] top-[57%] flex h-[10.5%] w-[82%] items-center justify-center px-[4%]",
-    ctaClassName: "absolute left-[8.3%] top-[69.7%] h-[10.3%] w-[82%] rounded-full",
+    amountBoxClassName: "absolute left-[15%] top-[71.9%] flex h-[6%] w-[70%] items-center justify-center px-[4%]",
+    ctaClassName: "absolute left-[14%] top-[79.5%] h-[7.5%] w-[72%] rounded-full",
     closeClassName: "absolute right-[6%] top-[7%] h-[4%] w-[10%] rounded-full",
     amountFontSize: (label: string) =>
       label.length >= 6 ? "clamp(2.4rem, 9vw, 3.4rem)" : label.length >= 5 ? "clamp(2.7rem, 10vw, 3.7rem)" : "clamp(3rem, 11vw, 4rem)",
@@ -99,7 +99,7 @@ export function PrizePopup({
         >
           <div className="relative">
             <h2 id="wheel-result-title" className="sr-only">
-              Sveikiname!
+              Parabéns!
             </h2>
             <p id="wheel-result-description" className="sr-only">
               {description}
@@ -149,7 +149,7 @@ export function PrizePopup({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Uždaryti"
+              aria-label="Fechar"
               className={`${popupConfig.closeClassName} bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75`}
             />
 
@@ -159,7 +159,7 @@ export function PrizePopup({
               onClick={onClose}
               className={`${popupConfig.ctaClassName} bg-transparent outline-none`}
             >
-              <span className="sr-only">Supratau</span>
+              <span className="sr-only">Continuar</span>
             </button>
           </div>
         </div>

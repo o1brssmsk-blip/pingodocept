@@ -12,9 +12,9 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return buildShareMetadata({
-    title: "IKI — Laimės Ratas",
+    title: "Pingo Doce — Roda da Sorte",
     description:
-      "IKI specialioji laimės ratai akcija! Išmėginkite savo sėkmę ir laimėkite išskirtinius prizus.",
+      "Campanha especial Roda da Sorte Pingo Doce! Tente a sua sorte e ganhe prémios exclusivos.",
     canonical: "/banken",
   });
 }

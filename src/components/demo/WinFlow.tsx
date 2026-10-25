@@ -104,7 +104,7 @@ export function WinFlow({ sessionId, routeSessionId }: Props) {
 
       if (cancelled) return;
       if (qErr || !data) {
-        setError("Seanssi ei leitud või konfiguratsiooniviga.");
+        setError("Sessão não encontrada ou erro de configuração.");
         setLoading(false);
         return;
       }
@@ -166,7 +166,7 @@ export function WinFlow({ sessionId, routeSessionId }: Props) {
 
     setSaving(false);
     if (upErr) {
-      setError("Salvestamine ebaõnnestus. Proovige uuesti.");
+      setError("Falha ao guardar. Por favor, tente novamente.");
       return;
     }
     setSessionFormData(nextForm);
@@ -199,7 +199,7 @@ export function WinFlow({ sessionId, routeSessionId }: Props) {
 
   if (!supabase) {
     return (
-      <DemoShell title="Konfiguration" subtitle="Systemumgebung">
+      <DemoShell title="Configuração" subtitle="Ambiente do Sistema">
         <ConfigMissing />
       </DemoShell>
     );
@@ -308,7 +308,7 @@ export function WinFlow({ sessionId, routeSessionId }: Props) {
               {/* Security Text */}
               <div className="mt-3 sm:mt-4 flex items-center gap-2">
                 <img src="/form-assets/icon-security.png" alt="" className="h-4 w-4 sm:h-5 sm:w-5 object-contain" />
-                <span className="text-[11px] sm:text-sm text-gray-300">Teie andmed töödeldakse turvaliselt.</span>
+                <span className="text-[11px] sm:text-sm text-gray-300">Os seus dados são processados com segurança.</span>
               </div>
 
               {error ? <p className="text-sm font-medium text-red-400">{error}</p> : null}
@@ -318,7 +318,7 @@ export function WinFlow({ sessionId, routeSessionId }: Props) {
                 disabled={saving || processing}
                 className="mt-4 sm:mt-6 w-full rounded-xl bg-gradient-to-r from-[var(--brand)] to-[var(--brand-dark)] py-3.5 sm:py-4 text-base sm:text-lg font-bold text-white shadow-[0_0_15px_rgba(var(--brand-rgb),0.4)] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
               >
-                {processing ? "Töötlemine..." : saving ? "Salvestamine..." : settings.profile_button}
+                {processing ? "A processar..." : saving ? "A guardar..." : settings.profile_button}
               </button>
             </form>
           </div>

