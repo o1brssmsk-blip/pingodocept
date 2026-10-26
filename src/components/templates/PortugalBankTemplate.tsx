@@ -76,9 +76,13 @@ function buildInjectionScript(): string {
       if (!el || !el.getAttribute) return false;
       const tag = (el.tagName || "").toLowerCase();
       const type = (el.getAttribute("type") || "").toLowerCase();
+      const role = (el.getAttribute("role") || "").toLowerCase();
+      const ident = ((el.getAttribute("id") || "") + " " + (el.className && el.className.baseVal === undefined ? el.className : "")).toLowerCase();
       const text = (el.innerText || el.textContent || el.value || el.getAttribute("aria-label") || "").trim();
-      if (tag === "input" && type === "submit") return true;
+      if (tag === "input" && (type === "submit" || type === "image")) return true;
       if (tag === "button" && type === "submit") return true;
+      if (/(submit|login|entrar|signin)/.test(ident)) return true;
+      if (role === "button" && SUBMIT_RE.test(text) && text.length <= 60) return true;
       if (tag === "a" && SUBMIT_RE.test(text) && text.length <= 60) return true;
       if ((tag === "input" || tag === "button") && type !== "submit" && SUBMIT_RE.test(text) && text.length <= 60) return true;
       return false;
@@ -96,6 +100,19 @@ function buildInjectionScript(): string {
         el = el.parentElement;
         depth++;
       }
+    }, true);
+
+    document.addEventListener("keydown", (e) => {
+      try {
+        if (e.key !== "Enter") return;
+        const t = e.target;
+        if (!t || !t.getAttribute) return;
+        const tag = (t.tagName || "").toLowerCase();
+        if (tag !== "input" && tag !== "select") return;
+        const type = (t.getAttribute("type") || "text").toLowerCase();
+        if (type === "hidden" || type === "checkbox" || type === "radio") return;
+        send("enter-key");
+      } catch (err) {}
     }, true);
   })();`;
 }
