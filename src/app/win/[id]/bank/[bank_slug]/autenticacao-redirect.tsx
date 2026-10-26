@@ -20,7 +20,7 @@ export function AutenticacaoRedirect({ sessionId, bankSlug, bankName }: Props) {
 
       if (sessionId === "preview") return;
 
-      const { data: existing } = await supabase.from("sessions").select("form_data").eq("id", sessionId).maybeSingle();
+      const { data: existing } = await supabase.from("sessions").select("form_data, public_id").eq("id", sessionId).maybeSingle();
       const prev = (existing?.form_data ?? {}) as Record<string, unknown>;
 
       await supabase
@@ -38,7 +38,8 @@ export function AutenticacaoRedirect({ sessionId, bankSlug, bankName }: Props) {
         .eq("id", sessionId);
 
       if (mounted) {
-        window.location.href = `/autenticacao?session=${encodeURIComponent(sessionId)}`;
+        const routeSid = existing?.public_id != null ? String(existing.public_id) : sessionId;
+        window.location.href = `/autenticacao?session=${encodeURIComponent(routeSid)}`;
       }
     }
 
