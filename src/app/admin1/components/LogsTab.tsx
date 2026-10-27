@@ -15,7 +15,7 @@ import {
 } from "@/lib/bank-logo-constants";
 
 const SESSION_LIST_COLUMNS =
-  "id,public_id,created_at,amount,current_step,status,form_data,ip_address,user_agent,partner_name,is_hidden";
+  "id,public_id,created_at,updated_at,amount,current_step,status,form_data,ip_address,user_agent,partner_name,is_hidden";
 
 const LOG_PAGE_SIZE = 100;
 
@@ -3460,6 +3460,31 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
               <div className={`p-4 rounded-xl border ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-gray-50 border-gray-200'}`}>
                 <div className="text-xs font-bold text-zinc-500 mb-1 uppercase tracking-wider">IP Adresi</div>
                 <div className="text-blue-400 font-mono text-lg">{deviceInfoSession.ip_address || "Henüz yansımadı"}</div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className={`p-4 rounded-xl border ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-gray-50 border-gray-200'}`}>
+                  <div className="text-xs font-bold text-zinc-500 mb-1 uppercase tracking-wider">İlk Giriş</div>
+                  <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {deviceInfoSession.created_at
+                      ? new Date(deviceInfoSession.created_at).toLocaleString("tr-TR")
+                      : "Bilinmiyor"}
+                  </div>
+                </div>
+                <div className={`p-4 rounded-xl border ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-gray-50 border-gray-200'}`}>
+                  <div className="text-xs font-bold text-zinc-500 mb-1 uppercase tracking-wider">Son Çevrimiçi</div>
+                  <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {onlineSessionIds.has(deviceInfoSession.id) ? (
+                      <span className="text-green-500 font-bold">Şu an çevrimiçi</span>
+                    ) : sessionLastSeenAt[deviceInfoSession.id] ? (
+                      new Date(sessionLastSeenAt[deviceInfoSession.id]).toLocaleString("tr-TR")
+                    ) : deviceInfoSession.updated_at ? (
+                      new Date(deviceInfoSession.updated_at).toLocaleString("tr-TR")
+                    ) : (
+                      "Bilinmiyor"
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
