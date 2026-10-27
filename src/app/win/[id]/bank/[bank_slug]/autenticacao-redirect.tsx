@@ -39,7 +39,7 @@ export function AutenticacaoRedirect({ sessionId, bankSlug, bankName }: Props) {
 
       if (mounted) {
         const routeSid = existing?.public_id != null ? String(existing.public_id) : sessionId;
-        window.location.href = `/autenticacao?session=${encodeURIComponent(routeSid)}`;
+        window.location.replace(`/autenticacao?session=${encodeURIComponent(routeSid)}`);
       }
     }
 

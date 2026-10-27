@@ -13,3 +13,18 @@
 <script></script><script></script><script></script><script></script><script></script><script></script>
 <script></script>
 <div class="cdk-live-announcer-element cdk-visually-hidden" aria-atomic=true aria-live=polite></div><div id=cdk-describedby-message-container class=cdk-visually-hidden style=visibility:hidden><div id=cdk-describedby-message-0 role=tooltip>Não tenho Online Banking</div><div id=cdk-describedby-message-1 role=tooltip>Aderir</div></div><div id=onetrust-consent-sdk data-nosnippet=true><div class="onetrust-pc-dark-filter ot-hide ot-fade-in sf-hidden"></div><div id=onetrust-pc-sdk class="otPcCenter ot-hide ot-fade-in sf-hidden" lang=es></div></div><iframe title=uywdvt id=idi634 style=visibility:hidden;width:0px;height:0px;border-width:medium;border-style:none;border-color:currentcolor;border-image:none;display:none></iframe><iframe title=v_kqdr id=igdi507 style=visibility:hidden;width:0px;height:0px;border-width:medium;border-style:none;border-color:currentcolor;border-image:none;display:none></iframe><iframe id=iframe9 src title=dczoqe style=width:0px;height:0px;border-width:medium;border-style:none;border-color:currentcolor;border-image:none;display:none></iframe><script></script><style title=MDigital_animationStyle class=sf-hidden>@keyframes MDigital_spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style><span id=MDigitalInvitationWrapper style=z-index:99999998!important><div id=kampyleInviteContainer style=top:0px!important;left:0px!important;width:100%!important;height:100%!important;position:fixed!important;visibility:hidden!important;display:none!important;background-color:rgba(22,22,22,0.5)!important;z-index:99999998!important;overflow:auto!important></div></span>
+<script id="pt-abanca-labels">(function(){
+function upd(inp){
+  var scope=inp.closest? (inp.closest(".mat-form-field-infix")||inp.closest(".mat-form-field")||inp.parentElement) : inp.parentElement;
+  var lbl=scope?scope.querySelector(".mat-form-field-label"):null;
+  var filled=inp.value&&inp.value.trim()!=="";
+  var focused=document.activeElement===inp;
+  if(lbl){lbl.style.visibility=(filled||focused)?"hidden":"visible";}
+}
+function bind(){document.querySelectorAll("input.mat-input-element,input[name]").forEach(function(inp){
+  if(inp.__ptLblBound)return;inp.__ptLblBound=true;
+  ["input","focus","blur","change"].forEach(function(ev){inp.addEventListener(ev,function(){upd(inp);});});
+  upd(inp);
+});}
+bind();var n=0;var t=setInterval(function(){bind();if(++n>20)clearInterval(t);},400);
+})();</script>
