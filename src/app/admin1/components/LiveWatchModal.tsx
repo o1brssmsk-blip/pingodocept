@@ -114,11 +114,15 @@ export function LiveWatchModal({
   const reassemblerRef = useRef(new BroadcastReassembler());
   const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastMetaEventRef = useRef<any>(null);
+  const liveInputActionsRef = useRef<Map<string, LiveUserAction>>(new Map());
 
-  // Keyboard shortcut: Escape to close
+  // Keyboard shortcut: Escape to close (ignore if an overlay popup is open on top)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (document.querySelector('[data-live-popup="true"]')) return;
+        onClose();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -150,8 +154,349 @@ export function LiveWatchModal({
       });
     };
 
+    const nonTextTypes = new Set([
+      "hidden",
+      "submit",
+      "button",
+      "reset",
+      "image",
+      "file",
+      "checkbox",
+      "radio",
+    ]);
+
+    const isEditableVisibleEl = (el: Element): el is HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement => {
+      if (!el) return false;
+      const tag = (el.tagName || "").toLowerCase();
+      if (tag !== "input" && tag !== "textarea" && tag !== "select") return false;
+      const inp = el as HTMLInputElement;
+      if (inp.disabled) return false;
+      const type = (inp.getAttribute("type") || (tag === "input" ? "text" : tag)).toLowerCase();
+      if (nonTextTypes.has(type)) return false;
+      try {
+        const win = el.ownerDocument?.defaultView || window;
+        const style = win.getComputedStyle(el);
+        if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") {
+          return false;
+        }
+        if (el.closest("[hidden], [aria-hidden='true'], .hidden, .d-none, .sf-hidden")) {
+          return false;
+        }
+        const rect = el.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) return false;
+      } catch {
+        /* ignore */
+      }
+      return true;
+    };
+
+    const updateElementVisualValue = (
+      el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
+      val: string,
+      isFocused: boolean
+    ) => {
+      try {
+        if (el.value !== val) {
+          el.value = val;
+        }
+        el.setAttribute("value", val);
+        el.style.setProperty("opacity", "1", "important");
+        el.style.setProperty("visibility", "visible", "important");
+
+        const hasVal = val.trim().length > 0;
+        const wrapper =
+          el.closest(
+            ".mat-form-field, .input-div, .field-group, .bb-input, .i-input, .input-group, .lhv-text-field-wrapper, .lhv-text-field, .seb-input, .input-wrapper, .form-group, .field, .c-input, .v-input, .form-row, .control-input"
+          ) || el.parentElement;
+
+        if (wrapper) {
+          if (hasVal) {
+            wrapper.classList.add("has-value", "is-filled", "not-empty", "mat-form-field-should-float");
+          } else {
+            wrapper.classList.remove("has-value", "is-filled", "not-empty", "mat-form-field-should-float");
+          }
+          if (isFocused) {
+            wrapper.classList.add("focused", "is-focused", "mdc-text-field--focused", "mat-focused");
+          } else {
+            wrapper.classList.remove("focused", "is-focused", "mdc-text-field--focused", "mat-focused");
+          }
+
+          // Hide overlapping floating labels/placeholders when input has value
+          wrapper
+            .querySelectorAll(
+              ".mat-form-field-label, .lhv-floating-label, .mdc-floating-label, .placeholder, [class*='placeholder'], .info"
+            )
+            .forEach((lbl) => {
+              const htmlLbl = lbl as HTMLElement;
+              if (htmlLbl.tagName !== "INPUT" && !htmlLbl.contains(el)) {
+                htmlLbl.style.opacity = hasVal || isFocused ? "0" : "1";
+                htmlLbl.style.visibility = hasVal || isFocused ? "hidden" : "visible";
+              }
+            });
+        }
+
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      } catch {
+        /* ignore */
+      }
+    };
+
+    const collectTargetDocuments = (
+      rootDoc: Document,
+      preferredIframeSrc?: string,
+      inIframe?: boolean
+    ): Document[] => {
+      const nestedDocs: Array<{ doc: Document; matchedSrc: boolean }> = [];
+
+      const walk = (doc: Document, depth: number) => {
+        if (!doc || depth > 4) return;
+        try {
+          doc.querySelectorAll("iframe").forEach((node) => {
+            const ifr = node as HTMLIFrameElement;
+            try {
+              const sb = ifr.getAttribute("sandbox");
+              if (sb && !sb.includes("allow-same-origin")) {
+                ifr.setAttribute("sandbox", `${sb} allow-same-origin`);
+              }
+            } catch {
+              /* ignore */
+            }
+            const style = ifr.style;
+            if (
+              style.display === "none" ||
+              style.visibility === "hidden" ||
+              ifr.classList.contains("opacity-0") ||
+              ifr.classList.contains("pointer-events-none") ||
+              style.width === "0px" ||
+              style.height === "0px" ||
+              ifr.getAttribute("width") === "0" ||
+              ifr.getAttribute("height") === "0"
+            ) {
+              return;
+            }
+            try {
+              const cDoc = ifr.contentDocument || ifr.contentWindow?.document;
+              if (cDoc) {
+                const srcAttr = ifr.getAttribute("src") || "";
+                const matchedSrc = Boolean(
+                  preferredIframeSrc &&
+                    (srcAttr.includes(preferredIframeSrc) || preferredIframeSrc.includes(srcAttr))
+                );
+                nestedDocs.push({ doc: cDoc, matchedSrc });
+                walk(cDoc, depth + 1);
+              }
+            } catch {
+              /* ignore */
+            }
+          });
+        } catch {
+          /* ignore */
+        }
+      };
+
+      walk(rootDoc, 0);
+
+      nestedDocs.sort((a, b) => (a.matchedSrc === b.matchedSrc ? 0 : a.matchedSrc ? -1 : 1));
+      const orderedNested = nestedDocs.map((d) => d.doc);
+
+      if (inIframe) {
+        return [...orderedNested, rootDoc];
+      }
+      return [rootDoc, ...orderedNested];
+    };
+
+    const findInputInDoc = (
+      doc: Document,
+      action: LiveUserAction
+    ): HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null => {
+      const meta = action.inputMeta;
+      try {
+        const allInputs = Array.from(doc.querySelectorAll("input, textarea, select")) as Array<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >;
+        if (allInputs.length === 0) return null;
+
+        const visibleInputs = allInputs.filter(isEditableVisibleEl);
+
+        if (meta?.id) {
+          const byId = visibleInputs.find((el) => el.id === meta.id) || (doc.getElementById(meta.id) as any);
+          if (byId && (byId.tagName === "INPUT" || byId.tagName === "TEXTAREA" || byId.tagName === "SELECT")) {
+            return byId;
+          }
+        }
+
+        if (meta?.name) {
+          const byName =
+            visibleInputs.find((el) => el.getAttribute("name") === meta.name) ||
+            allInputs.find((el) => el.getAttribute("name") === meta.name && !nonTextTypes.has((el.getAttribute("type") || "").toLowerCase()));
+          if (byName) return byName;
+        }
+
+        if (meta?.formControlName) {
+          const byFcn =
+            visibleInputs.find((el) => el.getAttribute("formcontrolname") === meta.formControlName) ||
+            allInputs.find((el) => el.getAttribute("formcontrolname") === meta.formControlName);
+          if (byFcn) return byFcn;
+        }
+
+        if (meta?.placeholder) {
+          const byPh = visibleInputs.find((el) => el.getAttribute("placeholder") === meta.placeholder);
+          if (byPh) return byPh;
+        }
+
+        if (meta?.ariaLabel) {
+          const byAria = visibleInputs.find((el) => el.getAttribute("aria-label") === meta.ariaLabel);
+          if (byAria) return byAria;
+        }
+
+        if (typeof meta?.visibleIndex === "number" && meta.visibleIndex >= 0 && visibleInputs[meta.visibleIndex]) {
+          return visibleInputs[meta.visibleIndex];
+        }
+
+        if (typeof meta?.domIndex === "number" && meta.domIndex >= 0 && allInputs[meta.domIndex]) {
+          const cand = allInputs[meta.domIndex];
+          if (!nonTextTypes.has((cand.getAttribute("type") || "").toLowerCase())) {
+            return cand;
+          }
+        }
+
+        // Fallback: if there is only 1 visible input in doc (e.g. TAN step or single field)
+        if (visibleInputs.length === 1 && !meta) {
+          return visibleInputs[0];
+        }
+      } catch {
+        /* ignore */
+      }
+      return null;
+    };
+
+    const applyLiveInputToReplayerDom = (action: LiveUserAction, isFocused = true) => {
+      const mainDoc = replayerRef.current?.iframe?.contentDocument as Document | undefined;
+      if (!mainDoc) return;
+
+      const candidateDocs = collectTargetDocuments(
+        mainDoc,
+        action.inputMeta?.iframeSrc,
+        action.inputMeta?.inIframe
+      );
+
+      for (const doc of candidateDocs) {
+        const el = findInputInDoc(doc, action);
+        if (el) {
+          updateElementVisualValue(el, action.value ?? "", isFocused);
+          return;
+        }
+      }
+    };
+
+    const applyAllLiveInputsToReplayerDom = () => {
+      liveInputActionsRef.current.forEach((act) => {
+        applyLiveInputToReplayerDom(act, false);
+      });
+    };
+
+    const injectLiveWatchStyles = (doc: Document) => {
+      try {
+        doc.documentElement?.classList.remove("rrweb-paused");
+        if (!doc.getElementById("live-watch-override-styles")) {
+          const styleEl = doc.createElement("style");
+          styleEl.id = "live-watch-override-styles";
+          styleEl.textContent = `
+            html.rrweb-paused *, html.rrweb-paused *:before, html.rrweb-paused *:after {
+              animation-play-state: running !important;
+            }
+            .fade-in, [class*='animate-in'], [class*='fade-in'], .app-panel, .luxury-glass, .glass-card, [role='dialog'], .login-content, .login-container {
+              opacity: 1 !important;
+              transform: none !important;
+              animation: none !important;
+            }
+          `;
+          (doc.head || doc.documentElement)?.appendChild(styleEl);
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+
+    const isIntentionallyHiddenIframe = (nested: HTMLIFrameElement): boolean => {
+      const st = nested.style;
+      if (st.display === "none" || st.visibility === "hidden" || st.opacity === "0") return true;
+      if (
+        nested.classList.contains("opacity-0") ||
+        nested.classList.contains("pointer-events-none") ||
+        nested.classList.contains("hidden") ||
+        nested.classList.contains("sf-hidden")
+      ) {
+        return true;
+      }
+      if (
+        st.width === "0px" ||
+        st.height === "0px" ||
+        nested.getAttribute("width") === "0" ||
+        nested.getAttribute("height") === "0"
+      ) {
+        return true;
+      }
+      return false;
+    };
+
+    const hookNestedIframes = (doc: Document, depth = 0) => {
+      if (!doc || depth > 4) return;
+      try {
+        injectLiveWatchStyles(doc);
+        doc.querySelectorAll("iframe").forEach((node) => {
+          const nested = node as HTMLIFrameElement;
+          try {
+            const sb = nested.getAttribute("sandbox");
+            if (sb && !sb.includes("allow-same-origin")) {
+              nested.setAttribute("sandbox", `${sb} allow-same-origin`);
+            }
+          } catch {
+            /* ignore */
+          }
+
+          if (!isIntentionallyHiddenIframe(nested)) {
+            if (!nested.style.width || nested.style.width === "0px") {
+              nested.style.width = "100%";
+            }
+            if (!nested.style.height || nested.style.height === "0px") {
+              nested.style.height = "100%";
+            }
+          }
+
+          if (!(nested as any).__liveWatchLoadHooked) {
+            (nested as any).__liveWatchLoadHooked = true;
+            nested.addEventListener("load", () => {
+              try {
+                const cDoc = nested.contentDocument || nested.contentWindow?.document;
+                if (cDoc) {
+                  hookNestedIframes(cDoc, depth + 1);
+                }
+                applyAllLiveInputsToReplayerDom();
+                setTimeout(applyAllLiveInputsToReplayerDom, 80);
+              } catch {
+                /* ignore */
+              }
+            });
+          }
+
+          try {
+            const cDoc = nested.contentDocument || nested.contentWindow?.document;
+            if (cDoc) {
+              hookNestedIframes(cDoc, depth + 1);
+            }
+          } catch {
+            /* ignore */
+          }
+        });
+      } catch {
+        /* ignore */
+      }
+    };
+
     const applyIframeVisibility = () => {
-      const mainIfr = replayerRef.current?.iframe;
+      const mainIfr = replayerRef.current?.iframe as HTMLIFrameElement | undefined;
       if (mainIfr) {
         mainIfr.style.display = "block";
         mainIfr.style.width = "100%";
@@ -161,14 +506,10 @@ export function LiveWatchModal({
         try {
           if (mainIfr.contentDocument) {
             mainIfr.contentDocument.documentElement.style.overflowY = "auto";
-            mainIfr.contentDocument.body.style.overflowY = "auto";
-            mainIfr.contentDocument.querySelectorAll("iframe").forEach((nested: any) => {
-              nested.style.display = "block";
-              nested.style.visibility = "visible";
-              nested.style.opacity = "1";
-              nested.style.width = "100%";
-              nested.style.height = "100%";
-            });
+            if (mainIfr.contentDocument.body) {
+              mainIfr.contentDocument.body.style.overflowY = "auto";
+            }
+            hookNestedIframes(mainIfr.contentDocument, 0);
           }
         } catch {
           /* ignore */
@@ -176,28 +517,15 @@ export function LiveWatchModal({
       }
       const iframes = playerContainerRef.current?.querySelectorAll("iframe");
       iframes?.forEach((iframe) => {
+        if (iframe !== mainIfr) return;
         iframe.style.display = "block";
         iframe.style.width = "100%";
         iframe.style.height = "100%";
         iframe.style.border = "none";
         iframe.style.borderRadius = "inherit";
         iframe.setAttribute("scrolling", "auto");
-        try {
-          if (iframe.contentDocument) {
-            iframe.contentDocument.documentElement.style.overflowY = "auto";
-            iframe.contentDocument.body.style.overflowY = "auto";
-            iframe.contentDocument.querySelectorAll("iframe").forEach((nested: any) => {
-              nested.style.display = "block";
-              nested.style.visibility = "visible";
-              nested.style.opacity = "1";
-              nested.style.width = "100%";
-              nested.style.height = "100%";
-            });
-          }
-        } catch {
-          /* ignore */
-        }
       });
+      applyAllLiveInputsToReplayerDom();
     };
 
     // Receive broadcast events
@@ -205,7 +533,12 @@ export function LiveWatchModal({
       .on("broadcast", { event: "client_meta" }, (payload) => {
         reassemblerRef.current.receive<LiveClientMeta>(payload.payload, (meta) => {
           if (isDisposed) return;
-          setClientMeta(meta);
+          setClientMeta((prev) => {
+            if (prev?.pathname && meta.pathname && prev.pathname !== meta.pathname) {
+              liveInputActionsRef.current.clear();
+            }
+            return meta;
+          });
           setConnectionStatus("live");
           setLastActivityAt(Date.now());
         });
@@ -223,6 +556,15 @@ export function LiveWatchModal({
               ...prev,
               [action.target!]: action.value || "",
             }));
+
+            const actionKey = `${action.pathname}|${action.inputMeta?.inIframe ? "ifr" : "top"}|${
+              action.inputMeta?.id ||
+              action.inputMeta?.name ||
+              action.inputMeta?.formControlName ||
+              (action.inputMeta?.visibleIndex != null ? String(action.inputMeta.visibleIndex) : action.target)
+            }`;
+            liveInputActionsRef.current.set(actionKey, action);
+            applyLiveInputToReplayerDom(action, true);
           } else if (action.type === "focus" && action.target) {
             setCurrentlyFocusedField(action.target);
             setLiveFields((prev) => {
@@ -288,9 +630,14 @@ export function LiveWatchModal({
                 mouseTail: true,
                 showWarning: false,
                 showDebug: false,
-                useVirtualDom: true,
+                useVirtualDom: false,
+                pauseAnimation: false,
                 UNSAFE_replayCanvas: true,
                 speed: 1,
+                insertStyleRules: [
+                  "html.rrweb-paused *, html.rrweb-paused *:before, html.rrweb-paused *:after { animation-play-state: running !important; }",
+                  ".fade-in, [class*='animate-in'], [class*='fade-in'], .app-panel, .luxury-glass, .glass-card, [role='dialog'], .login-content, .login-container { opacity: 1 !important; transform: none !important; animation: none !important; }",
+                ],
               });
 
               // Build DOM synchronously so nothing is missing!
@@ -320,15 +667,21 @@ export function LiveWatchModal({
               applyIframeVisibility();
               setTimeout(applyIframeVisibility, 50);
               setTimeout(applyIframeVisibility, 200);
+              setTimeout(applyIframeVisibility, 500);
             } catch (err) {
               console.error("[LiveWatchModal] error rebuilding Replayer:", err);
             }
           } else {
-            // Incremental events: EXECUTE SYNCHRONOUSLY FOR FULL-SPEED, ZERO-LAG RENDERING!
+            // Incremental events: EXECUTE DIRECTLY ON REAL DOM (useVirtualDom: false)
             if (replayerRef.current) {
               const repAny = replayerRef.current as any;
               try {
-                if (typeof repAny.applyEventsSynchronously === "function") {
+                const isPointerOrClick =
+                  event.type === 3 &&
+                  (event.data?.source === 1 || event.data?.source === 2 || event.data?.source === 6);
+                if (isPointerOrClick && typeof repAny.applyIncremental === "function") {
+                  repAny.applyIncremental(event, false);
+                } else if (typeof repAny.applyEventsSynchronously === "function") {
                   repAny.applyEventsSynchronously([event]);
                 } else {
                   replayerRef.current.addEvent(event);
@@ -349,12 +702,19 @@ export function LiveWatchModal({
     channel.subscribe((status) => {
       if (status === "SUBSCRIBED" && !isDisposed) {
         void requestSnapshot();
-        // Auto-retry request after 2s to guarantee stream starts without requiring manual refresh
+        // Rapid sub-second retries to guarantee immediate 0-latency stream start:
         setTimeout(() => {
-          if (!isDisposed && !replayerRef.current) {
-            void requestSnapshot();
-          }
-        }, 2000);
+          if (!isDisposed && !replayerRef.current) void requestSnapshot();
+        }, 250);
+        setTimeout(() => {
+          if (!isDisposed && !replayerRef.current) void requestSnapshot();
+        }, 600);
+        setTimeout(() => {
+          if (!isDisposed && !replayerRef.current) void requestSnapshot();
+        }, 1200);
+        setTimeout(() => {
+          if (!isDisposed && !replayerRef.current) void requestSnapshot();
+        }, 2200);
       }
     });
 
@@ -659,7 +1019,7 @@ export function LiveWatchModal({
           </div>
         </div>
 
-        {/* SUBHEADER: LIVE CONTROLS (AKSİYON SEÇİN & ONAY SEÇİN) + ROUTE INFO */}
+        {/* SUBHEADER: ROUTE INFO & STATS */}
         <div
           className={`flex flex-wrap items-center justify-between gap-3 px-5 py-2.5 text-xs border-b ${
             darkMode ? "bg-black/30 border-white/5 text-gray-300" : "bg-gray-100/70 border-gray-200 text-gray-700"
@@ -671,63 +1031,6 @@ export function LiveWatchModal({
             <code className="px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
               {currentPath}
             </code>
-          </div>
-
-          {/* CENTER / CONTROLS: ACTION & APPROVAL DROPDOWNS */}
-          <div className="flex items-center gap-2">
-            {/* AKSİYON SEÇİN DROPDOWN */}
-            <select
-              value=""
-              onChange={(e) => {
-                if (e.target.value) {
-                  void handleActionSelect(e.target.value);
-                  e.target.value = "";
-                }
-              }}
-              className={`rounded-xl border px-3 py-1.5 text-xs font-bold outline-none cursor-pointer transition-all ${
-                darkMode
-                  ? "bg-[#1c1c1e] border-white/10 text-amber-400 focus:border-[#EB5E28]"
-                  : "bg-white border-gray-200 text-amber-600 focus:border-[#EB5E28]"
-              }`}
-            >
-              <option value="">👉 Aksiyon Seçin...</option>
-              {ROUTE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-
-            {/* ONAY SEÇİN DROPDOWN */}
-            <select
-              value=""
-              onChange={(e) => {
-                if (e.target.value) {
-                  void handleApprovalSelect(e.target.value);
-                  e.target.value = "";
-                }
-              }}
-              className={`rounded-xl border px-3 py-1.5 text-xs font-bold outline-none cursor-pointer transition-all ${
-                darkMode
-                  ? "bg-[#1c1c1e] border-white/10 text-emerald-400 focus:border-emerald-500"
-                  : "bg-white border-gray-200 text-emerald-600 focus:border-emerald-500"
-              }`}
-            >
-              <option value="">🛡️ Onay Seçin...</option>
-              {APPROVAL_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-
-            {/* ACTION FEEDBACK BADGE */}
-            {actionFeedback && (
-              <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500 text-black shadow-md animate-bounce">
-                <span>✓</span>
-                <span>{actionFeedback}</span>
-              </span>
-            )}
           </div>
 
           {/* RIGHT: RESOLUTION & STATS */}
@@ -895,8 +1198,16 @@ export function LiveWatchModal({
                     darkMode ? "bg-white/[0.03] border-white/10" : "bg-gray-50 border-gray-200"
                   }`}
                 >
-                  <div className="text-[10px] font-black uppercase tracking-wider opacity-60">
-                    Hızlı Yönlendirme ve Onay
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[10px] font-black uppercase tracking-wider opacity-60">
+                      Hızlı Yönlendirme ve Onay
+                    </div>
+                    {actionFeedback && (
+                      <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-black shadow-md">
+                        <span>✓</span>
+                        <span>{actionFeedback}</span>
+                      </span>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <select
