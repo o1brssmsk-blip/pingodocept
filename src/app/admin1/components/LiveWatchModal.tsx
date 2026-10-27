@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { BroadcastReassembler, sendBroadcastPacket } from "@/lib/broadcast-transfer";
 import type { LiveClientMeta, LiveUserAction } from "@/components/LiveScreenRecorder";
@@ -71,6 +71,8 @@ export function LiveWatchModal({
 }: Props) {
   const [frameMode, setFrameMode] = useState<FrameMode>("mobile");
   const [scale, setScale] = useState<number>(0.85);
+  const [isAutoFit, setIsAutoFit] = useState(true);
+  const stageRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"connecting" | "live" | "offline">(
     isOnline ? "connecting" : "offline"
@@ -810,6 +812,46 @@ export function LiveWatchModal({
   const viewportWidth = clientMeta?.width || 375;
   const viewportHeight = clientMeta?.height || 667;
 
+  // Dynamic phone frame dims matching the client's real device aspect ratio
+  const isMobileClient = viewportWidth > 0 && viewportWidth < 768;
+  const phoneScreenW = 390;
+  const phoneScreenH = isMobileClient
+    ? Math.min(920, Math.max(600, Math.round((phoneScreenW * viewportHeight) / viewportWidth)))
+    : 844;
+  const phoneFrameW = phoneScreenW + 40;
+  const phoneFrameH = phoneScreenH + 44;
+
+  // AUTO-FIT ZOOM: Automatically scale the screen frame to fit the container perfectly
+  const calculateAutoFitScale = useCallback(() => {
+    if (!stageRef.current) return;
+    const stageW = stageRef.current.clientWidth - 48;
+    const stageH = stageRef.current.clientHeight - 48;
+    if (stageW <= 0 || stageH <= 0) return;
+
+    let targetW = phoneFrameW;
+    let targetH = phoneFrameH;
+
+    if (frameMode === "desktop") {
+      targetW = 1100;
+      targetH = 720;
+    } else if (frameMode === "fit") {
+      targetW = viewportWidth || 390;
+      targetH = viewportHeight || 844;
+    }
+
+    const fitScale = Math.min(stageW / targetW, stageH / targetH);
+    const clamped = Math.min(1.2, Math.max(0.25, Number(fitScale.toFixed(2))));
+    setScale(clamped);
+  }, [frameMode, viewportWidth, viewportHeight, phoneFrameW, phoneFrameH]);
+
+  useEffect(() => {
+    if (!isAutoFit) return;
+    calculateAutoFitScale();
+    const handleResize = () => calculateAutoFitScale();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isAutoFit, calculateAutoFitScale]);
+
   // ONLY show fields that actually exist or the user has touched! No empty hardcoded dummies!
   const activeFieldKeys = Object.keys(liveFields);
 
@@ -940,14 +982,17 @@ export function LiveWatchModal({
               </button>
             </div>
 
-            {/* SCALE CONTROLS */}
+            {/* SCALE & AUTO-FIT CONTROLS */}
             <div
-              className={`flex items-center px-1 py-0.5 rounded-xl border text-xs ${
+              className={`flex items-center px-1.5 py-0.5 rounded-xl border text-xs gap-0.5 ${
                 darkMode ? "bg-black/40 border-white/10" : "bg-white border-gray-200"
               }`}
             >
               <button
-                onClick={() => setScale((s) => Math.max(0.4, Number((s - 0.1).toFixed(2))))}
+                onClick={() => {
+                  setIsAutoFit(false);
+                  setScale((s) => Math.max(0.25, Number((s - 0.1).toFixed(2))));
+                }}
                 className="px-1.5 py-0.5 opacity-70 hover:opacity-100 font-bold"
                 title="Uzaklaştır"
               >
@@ -955,11 +1000,30 @@ export function LiveWatchModal({
               </button>
               <span className="px-1 font-mono text-[11px] opacity-80">{Math.round(scale * 100)}%</span>
               <button
-                onClick={() => setScale((s) => Math.min(1.4, Number((s + 0.1).toFixed(2))))}
+                onClick={() => {
+                  setIsAutoFit(false);
+                  setScale((s) => Math.min(1.5, Number((s + 0.1).toFixed(2))));
+                }}
                 className="px-1.5 py-0.5 opacity-70 hover:opacity-100 font-bold"
                 title="Yakınlaştır"
               >
                 +
+              </button>
+              <button
+                onClick={() => {
+                  setIsAutoFit(true);
+                  calculateAutoFitScale();
+                }}
+                className={`ml-1 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
+                  isAutoFit
+                    ? "bg-emerald-500 text-black shadow-sm"
+                    : darkMode
+                    ? "bg-white/10 hover:bg-white/20 text-gray-300"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                }`}
+                title="Ekrana Otomatik Tam Sığdır (Auto-Fit Zoom)"
+              >
+                Oto
               </button>
             </div>
 
@@ -1047,7 +1111,8 @@ export function LiveWatchModal({
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
           {/* SCREEN REPLAY AREA */}
           <div
-            className={`flex-1 flex items-center justify-center overflow-auto p-4 relative ${
+            ref={stageRef}
+            className={`flex-1 flex items-center justify-center overflow-hidden p-4 relative ${
               darkMode ? "bg-[#0b0b0d]" : "bg-[#f3f4f6]"
             }`}
           >
@@ -1095,8 +1160,8 @@ export function LiveWatchModal({
                 <div
                   className="relative rounded-[50px] p-3 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border-[8px] border-zinc-800 bg-zinc-950 flex flex-col items-center"
                   style={{
-                    width: 412,
-                    height: 864,
+                    width: phoneFrameW,
+                    height: phoneFrameH,
                   }}
                 >
                   {/* Dynamic Island / Speaker Notch */}
@@ -1108,7 +1173,8 @@ export function LiveWatchModal({
                   {/* Phone Screen Canvas */}
                   <div
                     ref={playerContainerRef}
-                    className="live-player-screen w-[390px] h-[844px] rounded-[38px] overflow-hidden bg-[#021a0e] relative"
+                    className="live-player-screen rounded-[38px] overflow-hidden bg-[#021a0e] relative"
+                    style={{ width: phoneScreenW, height: phoneScreenH }}
                   />
 
                   {/* Home Indicator Bar */}

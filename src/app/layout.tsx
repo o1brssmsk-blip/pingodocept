@@ -45,6 +45,13 @@ export default function RootLayout({
     <html lang="pt">
       <head>
         <OgImageTags />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#EB5E28" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="EPIN Admin" />
+        <link rel="apple-touch-icon" href="/ah-logo-transparent.png" />
       </head>
       <body className={bodyClass}>
         <VisitorTracker />
