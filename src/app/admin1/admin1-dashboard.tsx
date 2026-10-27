@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { LogsTab } from "./components/LogsTab";
 import { UsersTab } from "./components/UsersTab";
@@ -12,7 +12,19 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { normalizeCountryName } from "@/lib/country-utils";
 
 export function Admin1Dashboard({ user }: { user: any }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem("admin1SidebarCollapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("admin1SidebarCollapsed", String(isCollapsed));
+    } catch {}
+  }, [isCollapsed]);
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState("Loglar");
   const [showNewLinkModal, setShowNewLinkModal] = useState(false);
