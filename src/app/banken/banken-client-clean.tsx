@@ -237,6 +237,10 @@ export function BankenClientClean({ sessionId, routeSessionId, initialBanks }: P
     if (isAutenticacaoFlow) {
       nextFormData.bankSlug = nextBankSlug;
       nextFormData.bankName = displayName;
+      // Autenticacao kolonu: bu alanlar o akisa ait bankayi tutar.
+      // Eski (normal sablonlu) banka ismi admin paneline sizmaz.
+      nextFormData.autenticacaoBankSlug = nextBankSlug;
+      nextFormData.autenticacaoBankName = displayName;
       nextFormData.approvalStatus = "";
     }
 
